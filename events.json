@@ -1,0 +1,132 @@
+[
+  {
+    "id":"e1",
+    "title":"The 3am Incident",
+    "body":"Agnes rattling pipes; complaints from Room 8 and Mr. Dowd.",
+    "choices":[
+      {"id":1,"text":"Go to Room 7 and speak to Agnes directly","effects":{"rep":6,"tips":4,"gm":{"Agnes":15},"xp":2}},
+      {"id":2,"text":"Call maintenance and tell guests it is a pressure valve","effects":{"rep":-4}},
+      {"id":3,"text":"Send complimentary bourbon to complaining rooms","effects":{"rep":6,"tips":-12,"xp":1}}
+    ]
+  },
+  {
+    "id":"e2",
+    "title":"Professor Weir Has Evidence",
+    "body":"Professor Weir claims she has incontrovertible proof of a presence.",
+    "choices":[
+      {"id":1,"text":"Deny everything professionally","effects":{"rep":0}},
+      {"id":2,"text":"Quietly confirm: yes, she is real","effects":{"rep":-5,"tips":14,"gm":{"Agnes":8},"xp":1}},
+      {"id":3,"text":"Describe Agnes in vivid detail","effects":{"rep":5,"tips":8,"gm":{"Agnes":10},"xp":2}}
+    ]
+  },
+  {
+    "id":"e3",
+    "title":"Reginald and Room Service",
+    "body":"Reginald is rearranging place settings and guests notice.",
+    "choices":[
+      {"id":1,"text":"Explain it as personalized place setting service","effects":{"rep":6,"tips":10,"xp":1}},
+      {"id":2,"text":"Apologize and comp dessert","effects":{"rep":3,"tips":-8,"xp":0}},
+      {"id":3,"text":"Ask Reginald to please stop","effects":{"gm":{"Reginald":-8},"xp":1}}
+    ]
+  },
+  {
+    "id":"e4",
+    "title":"Derek is Live",
+    "body":"An influencer is streaming the hallway and may stir up guests.",
+    "choices":[
+      {"id":1,"text":"Shut it down","effects":{"rep":-7,"gm":{"Agnes":-12},"xp":0}},
+      {"id":2,"text":"Let it run","effects":{"rep":11,"gm":{"Agnes":-15},"xp":1}},
+      {"id":3,"text":"Negotiate a cut of his merch revenue","effects":{"rep":4,"tips":18,"gm":{"Agnes":5},"xp":3}}
+    ]
+  },
+  {
+    "id":"e5",
+    "title":"Something in Room 12",
+    "body":"Staff report odd activity in Room 12.",
+    "choices":[
+      {"id":1,"text":"Investigate yourself","effects":{"xp":2,"rep":0}},
+      {"id":2,"text":"Lock the room and say nothing","effects":{"xp":0,"rep":0}},
+      {"id":3,"text":"Report to management","effects":{"rep":3,"xp":1}}
+    ]
+  },
+  {
+    "id":"e6",
+    "title":"Beatrice Moss Asks The Question",
+    "body":"The travel writer asks if the hotel is haunted.",
+    "choices":[
+      {"id":1,"text":"Deny it entirely","effects":{"rep":2}},
+      {"id":2,"text":"Tell her everything","effects":{"rep":14,"tips":10,"gm":{"Agnes":12,"Reginald":8},"xp":2}},
+      {"id":3,"text":"Say only some guests experience things","effects":{"rep":6,"tips":5,"xp":1}}
+    ]
+  },
+  {
+    "id":"e7",
+    "title":"The Kowalski Kid",
+    "body":"A child is wandering the halls and talking to someone invisible.",
+    "choices":[
+      {"id":1,"text":"Gently bring the child back upstairs","effects":{"rep":3,"gm":{"Agnes":10},"xp":1}},
+      {"id":2,"text":"Pretend not seeing","effects":{"rep":-4,"xp":0}},
+      {"id":3,"text":"Sit near the child and wait","effects":{"rep":2,"gm":{"Agnes":20},"xp":3}}
+    ]
+  },
+  {
+    "id":"e8",
+    "title":"The Health Inspector",
+    "body":"A surprise visit from a health inspector.",
+    "choices":[
+      {"id":1,"text":"Give a gracious tour","effects":{"rep":8,"xp":1}},
+      {"id":2,"text":"Stall her in lobby","effects":{"rep":5,"tips":5,"xp":1}},
+      {"id":3,"text":"Let her go wherever she likes","effects":{"rep":-6,"xp":0}}
+    ]
+  },
+  {
+    "id":"e9",
+    "title":"The Wheel",
+    "body":"A mysterious wheel appears in the dining room.",
+    "choices":[
+      {"id":1,"text":"Dim lights and say nothing","effects":{"rep":10,"tips":80,"xp":3}},
+      {"id":2,"text":"Call it malfunction and apologize","effects":{"rep":-3}},
+      {"id":3,"text":"Ask couple to sit at wheel","effects":{"rep":8,"tips":60,"xp":4}}
+    ]
+  },
+  {
+    "id":"e10",
+    "title":"The Water Mark",
+    "body":"A faded watermark on the wall draws attention.",
+    "choices":[
+      {"id":1,"text":"Tell history of 1894 flood","effects":{"rep":7,"tips":45,"xp":3}},
+      {"id":2,"text":"Paint over it","effects":{"rep":0,"xp":1}},
+      {"id":3,"text":"Photograph it and say nothing","effects":{"rep":2,"xp":2}}
+    ]
+  },
+  {
+    "id":"e11",
+    "title":"The Man Who Came From Vanport",
+    "body":"A guest recognizes a photograph tied to Vanport.",
+    "choices":[
+      {"id":1,"text":"Tell the history of Vanport","effects":{"rep":6,"tips":20,"xp":3}},
+      {"id":2,"text":"Return photograph to lost and found","effects":{"rep":1}},
+      {"id":3,"text":"Leave photograph where found","effects":{"rep":4,"xp":2,"tips":10}}
+    ]
+  },
+  {
+    "id":"e12",
+    "title":"What Came Up From Below",
+    "body":"Something was found in the cellar.",
+    "choices":[
+      {"id":1,"text":"Seal it immediately","effects":{"xp":1}},
+      {"id":2,"text":"Contact a Portland historian","effects":{"rep":12,"xp":3}},
+      {"id":3,"text":"Go down yourself","effects":{"rep":3,"xp":4}}
+    ]
+  },
+  {
+    "id":"e13",
+    "title":"The Columbus Day Storm",
+    "body":"A violent storm approaches; staff must prepare.",
+    "choices":[
+      {"id":1,"text":"Secure building and brief staff","effects":{"rep":9,"xp":2}},
+      {"id":2,"text":"Reassure guests","effects":{"rep":3,"xp":1}},
+      {"id":3,"text":"Ask the long-timer about 1962","effects":{"rep":5,"tips":15,"xp":2}}
+    ]
+  }
+]

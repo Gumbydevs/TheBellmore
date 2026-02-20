@@ -1,0 +1,36 @@
+title,xp,needsGuests,needsOwner
+"Deliver the morning papers to occupied rooms on Floor 1",1,true,false
+"The elevator is stuck between floors 1 and 2 again",2,false,false
+"Replace lobby flowers. Agnes knocked them over again.",1,false,false
+"Extra towels requested from the occupied rooms on Floor 1",1,true,false
+"An untagged suitcase was left in the stairwell. Handle it.",1,false,false
+"The dining room fireplace will not light. Reginald is displeased.",2,false,false
+"Arrange an early taxi for a guest checking out tomorrow",1,true,false
+"Confirm that Room 12 is actually empty. Management insists.",2,false,false
+"Replace the hallway bulb outside Room 7. Out again.",1,false,false
+"Retrieve and log breakfast trays from the occupied floors",1,true,false
+"Wind the lobby grandfather clock. It has stopped.",1,false,false
+"File a cold spot incident report. Staff reported the stairwell.",1,false,false
+"Polish the brass fixtures in the lobby. The state of them.",1,false,false
+"The boiler pressure is reading high. Investigate before it becomes a situation.",2,false,false
+"Restock the complimentary items on Floor 2. Someone took everything.",1,false,false
+"The lobby piano has a stuck key. Find someone to look at it.",1,false,false
+"A guest left a complaint note at the front desk. Acknowledge and file it.",1,true,false
+"The garden entrance gate is not latching. Fix it before dark.",1,false,false
+"Walk the property. Check each floor and report anything unusual to the front desk.",1,false,false
+"The ice machine on Floor 2 is making a noise. Investigate before guests notice.",2,false,false
+"Something was rearranged in the dining room overnight. Set it right before breakfast service.",1,false,false
+"A cold draft is coming from the stairwell on Floor 3. Find the source and log it.",2,false,false
+"Three lobby chairs have been moved into a circle facing the fireplace. No guests did this.",2,false,false
+"The kitchen inventory needs logging before the morning delivery arrives.",1,false,false
+"The front entrance mat is missing. Find it before the morning shift notices.",1,false,false
+"A window on Floor 2 has been found open. Close it and check the others.",1,false,false
+"The reading room books have been pulled from their shelves and stacked by the chair. Re-shelve them.",1,false,false
+"Maintenance found a door locked from the inside with no one in the room. Handle it.",2,false,false
+"The bar inventory has a discrepancy. Two bottles of bourbon unaccounted for.",2,false,false
+"Review the overnight incident log and initial anything unusual.",1,false,false
+"Review the quarterly incident reports and sign off as owner.",3,false,true
+"The linen supplier has sent another letter. As owner, you can finally settle it.",4,false,true
+"A journalist wants a statement about the hotel's history. As owner, this is your call.",3,false,true
+"Staff payroll needs your signature. Welcome to ownership.",2,false,true
+"A Portland preservation society wants to landmark the building. Respond as owner.",3,false,true
