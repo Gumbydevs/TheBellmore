@@ -881,7 +881,25 @@
 // DATA
 // ────────────────────────────────────────────
 
-const SHIFT_HOURS = 8;
+// Time system: display hours to player, but use 30-minute internal units.
+const TIME_UNIT_MIN = 30; // minutes per unit
+const UNITS_PER_HOUR = 60 / TIME_UNIT_MIN; // 2
+const SHIFT_HOURS = 8; // displayed shift length (immersive)
+const SHIFT_UNITS = SHIFT_HOURS * UNITS_PER_HOUR; // internal units per shift (16)
+
+// Randomized per-action overhead settings
+const OVERHEAD_MAX_UNITS = 1; // up to 1 extra unit (0.5h)
+const OVERHEAD_PROB = 0.5; // 50% chance to incur the extra unit (avg overhead = 0.25h)
+
+function hoursToUnits(h) { return Math.round(h * UNITS_PER_HOUR); }
+function unitsToHours(u) { return (u / UNITS_PER_HOUR); }
+
+function randOverheadUnits() { return Math.random() < OVERHEAD_PROB ? OVERHEAD_MAX_UNITS : 0; }
+
+function unitsLabel(u) { // human readable like '1.5h' or '1h'
+  const h = unitsToHours(u);
+  return (Number.isInteger(h) ? h.toString() : h.toFixed(1)) + 'h';
+}
 
 const starTiers = {1:'Questionable',2:'Adequate',3:'Respectable',4:'Distinguished',5:'Grand'};
 
@@ -1257,7 +1275,11 @@ function loadGame() {
     // ensure runtime-only defaults exist
     G.rankNames = G.rankNames || ['Bellhop','Front Desk Clerk','General Manager','Owner'];
     G.rankThresh = G.rankThresh || [35,90,180,9999];
-    G.shiftHours = (typeof G.shiftHours === 'number') ? G.shiftHours : SHIFT_HOURS;
+    // Backwards compatibility: compute unitsLeft from legacy shiftHours if present
+    if (typeof G.unitsLeft === 'undefined') {
+      if (typeof G.shiftHours === 'number') G.unitsLeft = hoursToUnits(G.shiftHours);
+      else G.unitsLeft = SHIFT_UNITS;
+    }
     document.getElementById('introScreen').classList.add('hidden');
     renderAll();
     return true;
@@ -1349,7 +1371,8 @@ function startGame() {
     gId:0, ghostId:0, tId:0,
     upgrades: upgradeDefs.map(u=>({...u,owned:false})),
     condIdx:0,
-    shiftHours: SHIFT_HOURS,
+    // internal remaining time in units (30-minute units)
+    unitsLeft: SHIFT_UNITS,
     totalTips: 0,
     warningLevel: 0,
     lastRepLoss: 'general negligence',
@@ -1368,6 +1391,14 @@ function startGame() {
   document.getElementById('introScreen').classList.add('hidden');
   renderAll();
   // No event day 1 — let the player settle in
+}
+
+// Backwards-compatible load: translate legacy shiftHours to units
+function ensureUnitsOnLoad() {
+  if (typeof G.unitsLeft === 'undefined') {
+    if (typeof G.shiftHours === 'number') G.unitsLeft = hoursToUnits(G.shiftHours);
+    else G.unitsLeft = SHIFT_UNITS;
+  }
 }
 
 function resetGame() {
@@ -1415,9 +1446,42 @@ function hotelPrice() {
 function getSeason(day) { return seasons[Math.floor(((day-1)%120)/30)]; }
 
 function spendHour(n=1) {
-  if (G.shiftHours <= 0) return false;
-  G.shiftHours = Math.max(0, G.shiftHours - n);
+  // Backwards-compatible wrapper: convert hours to units and spend
+  const u = Math.max(0, Math.round(n * UNITS_PER_HOUR));
+  return spendUnits(u);
+}
+
+function spendUnits(u=1) {
+  if (!G || typeof G.unitsLeft === 'undefined') {
+    G.unitsLeft = SHIFT_UNITS;
+  }
+  if (G.unitsLeft <= 0) return false;
+  G.unitsLeft = Math.max(0, G.unitsLeft - u);
   return true;
+}
+
+// Action cost definitions (in internal units)
+const ACTION_BASE_UNITS = {
+  carry: hoursToUnits(1),   // 1.0h
+  checkin: hoursToUnits(2), // 2.0h (without bellcart)
+  stopby: hoursToUnits(2),  // 2.0h
+  task: hoursToUnits(2),    // 2.0h
+  ghost: hoursToUnits(2),   // 2.0h
+  request: hoursToUnits(3)  // 3.0h
+};
+
+function canAffordAction(baseUnits) {
+  if (!G || typeof G.unitsLeft === 'undefined') G.unitsLeft = SHIFT_UNITS;
+  // if baseUnits is 0, always allowed
+  if (baseUnits <= 0) return true;
+  return G.unitsLeft >= (baseUnits + OVERHEAD_MAX_UNITS);
+}
+
+function chargeAction(baseUnits) {
+  const overhead = randOverheadUnits();
+  const cost = baseUnits + overhead;
+  spendUnits(cost);
+  return cost;
 }
 
 function changeRep(d, reason) {
@@ -1557,8 +1621,9 @@ function _completeCheckIn(id) {
 function carryBags(id) {
   const a = G.arrivals.find(x=>x.id===id);
   if (!a) return;
-  if (G.shiftHours <= 0) { showResult('No shift hours remaining.','neutral',[{label:'No Hours Left',neg:true}]); return; }
-  spendHour(1);
+  const base = ACTION_BASE_UNITS.carry;
+  if (!canAffordAction(base)) { showResult('Not enough time to carry bags. Need '+unitsLabel(base+OVERHEAD_MAX_UNITS)+'.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
+  const cost = chargeAction(base);
   const guest = _completeCheckIn(id);
   if (!guest) return;
   const g = G.guests.find(x=>x.name===guest.name);
@@ -1591,9 +1656,9 @@ function directToDesk(id) {
 function processCheckIn(id) {
   const a = G.arrivals.find(x=>x.id===id);
   if (!a) return;
-  if (G.shiftHours <= 0) { showResult('No shift hours remaining.','neutral',[{label:'No Hours Left',neg:true}]); return; }
-  const cost = owned('bellcart') ? 0 : 1;
-  spendHour(cost);
+  const costUnits = owned('bellcart') ? 0 : ACTION_BASE_UNITS.checkin;
+  if (!canAffordAction(costUnits)) { showResult('Not enough time to process a check-in. Need '+unitsLabel(costUnits+OVERHEAD_MAX_UNITS)+'.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
+  const costCharged = chargeAction(costUnits);
   const guest = _completeCheckIn(id);
   if (!guest) return;
   const g = G.guests.find(x=>x.name===guest.name);
@@ -1614,11 +1679,9 @@ function stopByRoom(id) {
     showResult('You have already stopped by for <strong>'+g.name+'</strong> today. Another visit would be hovering.','neutral',[{label:'Come Back Tomorrow'}]);
     return;
   }
-  if (G.shiftHours <= 0) {
-    showResult('No shift hours remaining. Close out the day to begin a new shift.','neutral',[{label:'No Hours Left',neg:true}]);
-    return;
-  }
-  spendHour(1);
+  const stopUnits = ACTION_BASE_UNITS.stopby;
+  if (!canAffordAction(stopUnits)) { showResult('You need at least '+unitsLabel(stopUnits+OVERHEAD_MAX_UNITS)+' to stop by a room.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
+  const stopCost = chargeAction(stopUnits);
   g.attendedToday = true;
   const wasMaxed = g.happiness >= 100;
   const boost = Math.min(100-g.happiness, 10+Math.floor(Math.random()*8));
@@ -1645,11 +1708,9 @@ function fulfillRequest(id) {
     showResult('You have already worked on a request today for <strong>'+g.name+'</strong>.','neutral',[{label:'Already Done Today'}]);
     return;
   }
-  if (G.shiftHours < 2) {
-    showResult('Fulfilling a guest request takes 2 hours. You only have '+G.shiftHours+' left. End your shift to reset.','neutral',[{label:'Not Enough Hours',neg:true}]);
-    return;
-  }
-  spendHour(2);
+  const reqUnits = ACTION_BASE_UNITS.request;
+  if (!canAffordAction(reqUnits)) { showResult('Fulfilling a guest request takes '+unitsLabel(reqUnits+OVERHEAD_MAX_UNITS)+'. You only have '+unitsLabel(G.unitsLeft)+' left. End your shift to reset.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
+  const reqCost = chargeAction(reqUnits);
   g.reqDone = true; g.reqFulfilledToday = true;
   const r = g.reqReward||10;
   const gained = earn(r);
@@ -1684,11 +1745,9 @@ function interactGhost(id) {
     showResult('You have already done what you can for <strong>'+g.name+'</strong> today. Come back tomorrow.','neutral',[{label:'Come Back Tomorrow'}]);
     return;
   }
-  if (G.shiftHours <= 0) {
-    showResult('No shift hours remaining. Close out the day to begin a new shift.','neutral',[{label:'No Hours Left',neg:true}]);
-    return;
-  }
-  spendHour(1);
+  const ghUnits = ACTION_BASE_UNITS.ghost;
+  if (!canAffordAction(ghUnits)) { showResult('You need at least '+unitsLabel(ghUnits+OVERHEAD_MAX_UNITS)+' to tend to a permanent resident.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
+  const ghCost = chargeAction(ghUnits);
   g.interactedToday = true;
   const boost = 10+Math.floor(Math.random()*12);
   g.mood = Math.min(100, g.mood+boost);
@@ -1735,11 +1794,9 @@ function ghostHistory(id) {
 function completeTask(id) {
   const t = G.tasks.find(x=>x.id===id);
   if (!t) return;
-  if (G.shiftHours <= 0) {
-    showResult('No shift hours remaining. End your shift to start a new day.','neutral',[{label:'No Hours Left',neg:true}]);
-    return;
-  }
-  spendHour(1);
+  const taskUnits = ACTION_BASE_UNITS.task;
+  if (!canAffordAction(taskUnits)) { showResult('You need at least '+unitsLabel(taskUnits+OVERHEAD_MAX_UNITS)+' to complete this task.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
+  const taskCost = chargeAction(taskUnits);
   t.done = true; earn(2); addXP(t.xp);
   log('Completed: "'+t.title+'"','good');
   renderAll();
@@ -1781,7 +1838,7 @@ function buyUpgrade(uid) {
 // ────────────────────────────────────────────
 function advanceDay() {
   G.day++;
-  G.shiftHours = SHIFT_HOURS;
+  G.unitsLeft = SHIFT_UNITS;
 
   // Reset daily flags
   G.guests.forEach(g=>{ g.attendedToday = false; g.reqFulfilledToday = false; });
@@ -1937,14 +1994,15 @@ function gameOver(cause) {
 function renderAll() {
   const stars = repToStars(G.rep);
   const season = getSeason(G.day);
-  const timeColor = G.shiftHours > 4 ? 'var(--gold)' : G.shiftHours > 1 ? '#e67e22' : 'var(--red-bright)';
-  const timePct = (G.shiftHours / SHIFT_HOURS) * 100;
+  const timeColor = G.unitsLeft > hoursToUnits(4) ? 'var(--gold)' : G.unitsLeft > hoursToUnits(1) ? '#e67e22' : 'var(--red-bright)';
+  const timePct = (G.unitsLeft / SHIFT_UNITS) * 100;
+  const checkInCost = owned('bellcart') ? 0 : ACTION_BASE_UNITS.checkin;
 
   // Header pills
   document.getElementById('tipsVal').textContent = fmt(G.tips);
   document.getElementById('occupancyVal').textContent = G.guests.length+'🧍 '+G.ghosts.length+'👻';
   document.getElementById('seasonVal').textContent = seasonIcons[season]+' '+season;
-  document.getElementById('timeVal').textContent = G.shiftHours+'h';
+  document.getElementById('timeVal').textContent = unitsLabel(G.unitsLeft);
   document.getElementById('timeVal').style.color = timeColor;
 
   // Nav badges
@@ -1988,12 +2046,12 @@ function renderAll() {
   document.getElementById('repBar').style.cssText = 'width:'+repBarPct(G.rep)+'%;background:'+repBarColor(G.rep);
   document.getElementById('repBar').classList.toggle('danger', G.rep <= 35);
   document.getElementById('timeBar').style.cssText = 'width:'+timePct+'%;background:'+timeColor;
-  document.getElementById('timeBarLabel').textContent = G.shiftHours+' of '+SHIFT_HOURS;
+  document.getElementById('timeBarLabel').textContent = unitsLabel(G.unitsLeft)+' of '+SHIFT_HOURS+'h';
 
   // No time banner
   const banner = document.getElementById('noTimeBanner');
-  banner.innerHTML = G.shiftHours <= 0
-    ? '<div class="no-time-banner">Your shift hours are used up. End the shift to begin a new day.</div>'
+  banner.innerHTML = G.unitsLeft <= 0
+    ? '<div class="no-time-banner">Your shift time is used up. End the shift to begin a new day.</div>'
     : '';
 
   // Active event
@@ -2016,12 +2074,12 @@ function renderAll() {
     const isBellhop = G.rank === 0;
     notifSlot.innerHTML = `<div style="margin-bottom:10px">
       <div class="sec-title" style="margin-bottom:8px">Arriving Now <span class="sec-count">${G.arrivals.length}</span></div>
-      ${G.arrivals.map(a => {
+        ${G.arrivals.map(a => {
         const tag = a.tag ? `<span class="ctag ctag-${a.tag}" style="font-size:8px">${a.tagLabel}</span>` : '';
-        const actions = isBellhop
-          ? `<button class="btn btn-gold" onclick="carryBags(${a.id})" ${G.shiftHours<=0?'disabled':''}>Carry Bags <span class="cost-badge">1h</span></button>
+          const actions = isBellhop
+           ? `<button class="btn btn-gold" onclick="carryBags(${a.id})" ${!canAffordAction(ACTION_BASE_UNITS.carry)?'disabled':''}>Carry Bags <span class="cost-badge">${unitsLabel(ACTION_BASE_UNITS.carry+OVERHEAD_MAX_UNITS)}</span></button>
              <button class="btn btn-dim" onclick="directToDesk(${a.id})">Direct to Desk</button>`
-          : `<button class="btn btn-gold btn-full" onclick="processCheckIn(${a.id})" ${G.shiftHours<=0?'disabled':''}>Process Check-in ${!owned('bellcart')?'<span class="cost-badge">1h</span>':'<span class="cost-badge">Free</span>'}</button>`;
+           : `<button class="btn btn-gold btn-full" onclick="processCheckIn(${a.id})" ${ (checkInCost>0 && !canAffordAction(checkInCost)) ? 'disabled' : ''}>Process Check-in ${!owned('bellcart')?'<span class="cost-badge">'+unitsLabel(ACTION_BASE_UNITS.checkin+OVERHEAD_MAX_UNITS)+'</span>':'<span class="cost-badge">Free</span>'}</button>`;
         return `<div style="background:var(--paper);border:1px solid #8e44ad;border-radius:6px;padding:10px 12px;margin-bottom:6px;border-left:3px solid #9b59b6">
           <div style="font-size:9px;color:#c39bd3;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Guest Arriving · Room ${a.room}</div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -2042,9 +2100,9 @@ function renderAll() {
   } else {
     tl.innerHTML = pending.map(t=>`<div class="card ctask">
       <div class="card-name" style="font-size:13px;line-height:1.4;margin-bottom:5px">${t.title}</div>
-      <div style="font-size:10px;color:var(--ink-faint)">+${t.xp} XP <span class="cost-badge">1 hour</span></div>
+      <div style="font-size:10px;color:var(--ink-faint)">+${t.xp} XP <span class="cost-badge">${unitsLabel(ACTION_BASE_UNITS.task+OVERHEAD_MAX_UNITS)}</span></div>
       <div class="card-actions" style="margin-top:8px">
-        <button class="btn btn-green btn-full" onclick="completeTask(${t.id})" ${G.shiftHours<=0?'disabled':''}>See to It</button>
+        <button class="btn btn-green btn-full" onclick="completeTask(${t.id})" ${!canAffordAction(ACTION_BASE_UNITS.task)?'disabled':''}>See to It</button>
       </div></div>`).join('');
   }
 
@@ -2070,9 +2128,9 @@ function renderAll() {
     al.innerHTML = G.arrivals.map(a=>{
       const tag = a.tag?`<span class="ctag ctag-${a.tag}">${a.tagLabel}</span>`:'';
       const actions = isBellhop
-        ? `<button class="btn btn-gold" onclick="carryBags(${a.id})" ${G.shiftHours<=0?'disabled':''}>Carry Bags <span class="cost-badge">1h</span></button>
+        ? `<button class="btn btn-gold" onclick="carryBags(${a.id})" ${!canAffordAction(ACTION_BASE_UNITS.carry)?'disabled':''}>Carry Bags <span class="cost-badge">${unitsLabel(ACTION_BASE_UNITS.carry+OVERHEAD_MAX_UNITS)}</span></button>
            <button class="btn btn-dim" onclick="directToDesk(${a.id})">Direct to Desk</button>`
-        : `<button class="btn btn-gold btn-full" onclick="processCheckIn(${a.id})" ${G.shiftHours<=0?'disabled':''}>Process Check-in ${!owned('bellcart')?'<span class="cost-badge">1h</span>':'<span class="cost-badge">Free</span>'}</button>`;
+        : `<button class="btn btn-gold btn-full" onclick="processCheckIn(${a.id})" ${ (checkInCost>0 && !canAffordAction(checkInCost)) ? 'disabled' : ''}>Process Check-in ${!owned('bellcart')?'<span class="cost-badge">'+unitsLabel(ACTION_BASE_UNITS.checkin+OVERHEAD_MAX_UNITS)+'</span>':'<span class="cost-badge">Free</span>'}</button>`;
       return `<div class="arrival-card">
         <div class="arrival-label">Checking In Today · Room ${a.room}</div>
         <div class="card-head"><div class="card-name">${a.name}</div>${tag}</div>
@@ -2095,7 +2153,7 @@ function renderAll() {
       const reqHtml = !g.reqDone
         ? `<div class="req-badge">
              <span class="req-text">Request: ${g.request}</span>
-             <span class="req-cost">2 hours</span>
+             <span class="req-cost">${unitsLabel(ACTION_BASE_UNITS.request+OVERHEAD_MAX_UNITS)}</span>
              <span class="req-reward">+$${g.reqReward}</span>
            </div>`
         : `<div style="font-size:10px;color:var(--green-bright);margin-top:6px;font-style:italic">✓ Request fulfilled</div>`;
@@ -2106,11 +2164,11 @@ function renderAll() {
         ${reqHtml}
         <div class="mood-row"><span class="mood-label">Mood</span><div class="mood-track"><div class="mood-fill" style="width:${g.happiness}%;background:${mc}"></div></div><span class="mood-pct" style="color:${mc}">${g.happiness}%</span></div>
         <div class="card-actions">
-          <button class="btn btn-gold" onclick="stopByRoom(${g.id})" ${g.attendedToday||G.shiftHours<=0?'disabled':''}>
+          <button class="btn btn-gold" onclick="stopByRoom(${g.id})" ${g.attendedToday||!canAffordAction(ACTION_BASE_UNITS.stopby)?'disabled':''}>
             ${g.happiness>=100?'⭐ VIP':g.attendedToday?'Done Today':'Stop By Room'}
-            ${!g.attendedToday?'<span class="cost-badge">1h</span>':''}
+            ${!g.attendedToday?'<span class="cost-badge">'+unitsLabel(ACTION_BASE_UNITS.stopby+OVERHEAD_MAX_UNITS)+'</span>':''}
           </button>
-          ${!g.reqDone?`<button class="btn btn-purple" onclick="fulfillRequest(${g.id})" ${g.reqFulfilledToday||G.shiftHours<2?'disabled':''}>See to Request <span class="cost-badge">2h</span></button>`:''}
+          ${!g.reqDone?`<button class="btn btn-purple" onclick="fulfillRequest(${g.id})" ${g.reqFulfilledToday||!canAffordAction(ACTION_BASE_UNITS.request)?'disabled':''}>See to Request <span class="cost-badge">${unitsLabel(ACTION_BASE_UNITS.request+OVERHEAD_MAX_UNITS)}</span></button>`:''}
           <button class="btn btn-dim" onclick="checkoutGuest(${g.id})">Check Out</button>
         </div></div>`;
     }).join('');
@@ -2120,14 +2178,14 @@ function renderAll() {
   document.getElementById('ghostList').innerHTML = G.ghosts.map(g=>{
     const ms=moodState(g.mood); const mc=moodColor(g.mood);
     const verb = g.interactVerb || 'Tend To';
-    const canInteract = !g.interactedToday && G.shiftHours > 0;
+    const canInteract = !g.interactedToday && canAffordAction(ACTION_BASE_UNITS.ghost);
     return `<div class="card cghost">
       <div class="card-head"><div class="card-name ghost-shimmer">${g.name}</div><span class="ctag ctag-${ms}">${ms}</span></div>
       <div class="card-desc">${g.desc}</div>
       <div style="font-size:10px;color:var(--ink-faint);margin-top:5px;font-style:italic">Room ${g.room} · ${g.era} · Wants: ${g.want}</div>
       <div class="mood-row" style="margin-top:8px"><span class="mood-label">Mood</span><div class="mood-track"><div class="mood-fill" style="width:${g.mood}%;background:${mc}"></div></div><span class="mood-pct" style="color:${mc}">${g.mood}%</span></div>
       <div class="card-actions">
-        <button class="btn btn-ghost" onclick="interactGhost(${g.id})" ${canInteract?'':'disabled'}>${g.interactedToday?'Done Today':verb} ${canInteract?'<span class="cost-badge">1h</span>':''}</button>
+        <button class="btn btn-ghost" onclick="interactGhost(${g.id})" ${canInteract?'':'disabled'}>${g.interactedToday?'Done Today':verb} ${canInteract?'<span class="cost-badge">'+unitsLabel(ACTION_BASE_UNITS.ghost+OVERHEAD_MAX_UNITS)+'</span>':''}</button>
         <button class="btn btn-dim" onclick="leaveAlone(${g.id})">Leave Be</button>
         <button class="btn btn-dim" style="flex:0;min-width:64px;text-align:center;padding:7px 8px" onclick="ghostHistory(${g.id})">History</button>
       </div></div>`;
