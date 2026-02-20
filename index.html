@@ -416,7 +416,7 @@
     You just started your first day as a <span style="color:var(--gold);font-weight:normal;font-style:normal">Bellhop</span> at The Bellmore, a once grand hotel that has seen better decades.<br><br>
     Manage the living. Negotiate with the dead. Try not to get fired.
   </div>
-  <button onclick="startGame()" style="background:none;border:none;padding:0;cursor:pointer;max-width:300px;width:100%;-webkit-tap-highlight-color:transparent">
+  <div id="introControls" style="max-width:300px;width:100%;margin:0 auto;text-align:center">
     <div style="border:2px solid var(--gold);border-radius:8px;overflow:hidden;box-shadow:0 0 40px rgba(201,168,76,.2),0 0 80px rgba(201,168,76,.08)">
       <!-- The Bellmore — Victorian hotel illustration -->
       <svg viewBox="0 0 200 150" width="100%" style="display:block;image-rendering:pixelated;background:#06040d" xmlns="http://www.w3.org/2000/svg">
@@ -726,12 +726,16 @@
         <rect x="40"  y="106" width="120" height="2"  fill="#120e08" opacity=".3"/>
 
       </svg>
-      <!-- Button label -->
+      <!-- Button label area (controls below) -->
       <div style="padding:12px 0;background:linear-gradient(180deg,#1f1508,#181006);border-top:1px solid var(--gold);font-family:'Playfair Display',serif;font-size:15px;letter-spacing:4px;color:var(--gold-bright);text-align:center">
-        BEGIN SHIFT
+        <div id="introBtnRow" style="display:flex;gap:8px;justify-content:center;padding:6px 12px">
+          <button id="continueBtn" class="btn btn-gold btn-lg" style="display:none;border:none">Continue Shift</button>
+          <button id="newBtn" class="btn btn-dim btn-lg" style="border:none">Begin Shift</button>
+        </div>
+        <div id="lastSavedStr" style="margin-top:8px;font-size:11px;color:var(--ink-faint);font-style:italic">No saved game</div>
       </div>
     </div>
-  </button>
+  </div>
   <div style="margin-top:14px;font-size:10px;color:var(--ink-faint);letter-spacing:2px;font-style:italic">v0.9.1 · Public Beta</div>
   </div>
 
@@ -1226,6 +1230,114 @@ function checkGhostUnlocks() {
 // STATE
 // ────────────────────────────────────────────
 let G = {};
+
+// ────────────────────────────────────────────
+// SAVE / LOAD (autosave)
+// ────────────────────────────────────────────
+const SAVE_KEY = 'bellmore_save_v1';
+
+function saveGame() {
+  try {
+    const payload = { G, savedAt: Date.now() };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+    // expose lastSaved for debugging/testing
+    window.lastBellmoreSave = payload.savedAt;
+  } catch (e) {
+    console.warn('Bellmore: save failed', e);
+  }
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.G) return false;
+    G = parsed.G;
+    // ensure runtime-only defaults exist
+    G.rankNames = G.rankNames || ['Bellhop','Front Desk Clerk','General Manager','Owner'];
+    G.rankThresh = G.rankThresh || [35,90,180,9999];
+    G.shiftHours = (typeof G.shiftHours === 'number') ? G.shiftHours : SHIFT_HOURS;
+    document.getElementById('introScreen').classList.add('hidden');
+    renderAll();
+    return true;
+  } catch (e) {
+    console.warn('Bellmore: load failed', e);
+    return false;
+  }
+}
+
+function clearSave() { localStorage.removeItem(SAVE_KEY); }
+
+// Autosave on interval and on unload
+window.addEventListener('beforeunload', saveGame);
+setInterval(()=>{ if (G && Object.keys(G).length) saveGame(); }, 5000);
+
+// Intro controls: show Continue if a save exists, otherwise show Begin
+function formatSavedAt(ts) {
+  try {
+    const d = new Date(ts);
+    return d.toLocaleString();
+  } catch(e) { return '' + ts; }
+}
+
+function introControlsRender() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  const cont = document.getElementById('continueBtn');
+  const newb = document.getElementById('newBtn');
+  const last = document.getElementById('lastSavedStr');
+  if (!cont || !newb || !last) return;
+  if (raw) {
+    try {
+      const p = JSON.parse(raw);
+      const when = p && p.savedAt ? formatSavedAt(p.savedAt) : 'Unknown time';
+      cont.style.display = 'inline-block';
+      cont.textContent = 'Continue Shift';
+      last.textContent = 'Last saved: '+when;
+    } catch(e) {
+      cont.style.display = 'inline-block';
+      last.textContent = 'Last saved: (corrupt)';
+    }
+  } else {
+    cont.style.display = 'none';
+    last.textContent = 'No saved game';
+  }
+}
+
+function continueGame() {
+  const ok = loadGame();
+  if (ok) {
+    document.getElementById('introScreen').classList.add('hidden');
+    renderAll();
+  } else {
+    // fallback to new game
+    startGame();
+  }
+}
+
+function newGameFromIntro() {
+  try { clearSave(); } catch(e){}
+  startGame();
+}
+
+// wire up intro buttons if present
+document.addEventListener('DOMContentLoaded', ()=>{
+  const cont = document.getElementById('continueBtn');
+  const newb = document.getElementById('newBtn');
+  if (cont) cont.addEventListener('click', continueGame);
+  if (newb) newb.addEventListener('click', newGameFromIntro);
+  introControlsRender();
+  // also update footer last-saved if present
+  const footer = document.querySelector('.sidebar-footer');
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw && footer) {
+      const p = JSON.parse(raw);
+      footer.style.display = 'block';
+      footer.innerHTML = 'Last saved: '+(p && p.savedAt?formatSavedAt(p.savedAt):'Unknown') + '<br><span style="opacity:.6">v0.9.1 · Public Beta</span>';
+    }
+  } catch(e) {}
+});
 
 function startGame() {
   G = {
@@ -2074,6 +2186,9 @@ function renderAll() {
       }
     </div>`;
   }).join('');
+
+  // persist state after rendering so progress is not lost
+  try { saveGame(); } catch(e) { /* best effort */ }
 }
 
 // ────────────────────────────────────────────
@@ -2085,6 +2200,9 @@ function sv(name) {
   document.getElementById('view-'+name).classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
 }
+
+// Do not auto-resume; intro controls handle continue/new game rendering.
+introControlsRender();
 
 </script>
 </body>
