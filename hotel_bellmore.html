@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Bellmore</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1208;
+    --paper: #2a1f0f;
+    --paper-light: #352812;
+    --paper-mid: #3f3018;
+    --ink: #e8d5a3;
+    --ink-dim: #b09a6e;
+    --ink-faint: #6a5a3a;
+    --gold: #c9a84c;
+    --gold-bright: #f0c040;
+    --red-bright: #e74c3c;
+    --green: #27ae60;
+    --green-bright: #2ecc71;
+    --ghost: #7ec8e3;
+    --border: #5a4a30;
+    --shadow: rgba(0,0,0,0.7);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Courier Prime', monospace;
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 76px;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(90,74,48,0.06) 27px, rgba(90,74,48,0.06) 28px);
+  }
+
+  /* HEADER */
+  .hotel-header { background: var(--paper); border-bottom: 2px solid var(--gold); padding: 12px 16px 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 24px var(--shadow); }
+  .hotel-name { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--gold-bright); letter-spacing: 3px; text-align: center; }
+  .hotel-sub { font-size: 9px; color: var(--ink-faint); letter-spacing: 2px; text-align: center; margin-top: 1px; font-style: italic; }
+  .star-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+  .stars { display: flex; gap: 3px; }
+  .star { font-size: 18px; transition: all 0.3s; }
+  .star.on { color: var(--gold-bright); filter: drop-shadow(0 0 3px rgba(240,192,64,0.5)); }
+  .star.off { color: var(--paper-mid); }
+  .star-tier { font-size: 11px; color: var(--gold); font-family: 'Playfair Display', serif; }
+  .rep-bar-track { height: 4px; background: var(--paper-light); border-radius: 3px; overflow: hidden; margin: 6px 16px 0; border: 1px solid var(--border); }
+  @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .rep-bar-fill.danger { animation: pulse-red 1.2s ease-in-out infinite; }
+  .header-row { display: flex; gap: 6px; margin-top: 8px; }
+  .hpill { flex: 1; background: var(--paper-light); border: 1px solid var(--border); border-radius: 4px; padding: 4px 4px; text-align: center; font-size: 9px; color: var(--ink-dim); letter-spacing: .3px; }
+  .hpill .v { display: block; font-size: 14px; font-weight: bold; font-family: 'Playfair Display', serif; line-height: 1.3; }
+  .htips .v { color: var(--green-bright); }
+  .hghosts .v { color: var(--ghost); }
+  .hseason .v { color: var(--ink-dim); font-size: 11px; }
+  .htime .v { color: var(--gold); }
+
+  /* SHIFT TIME BAR */
+  .time-bar-wrap { padding: 0 16px; margin-top: 6px; }
+  .time-bar-label { display: flex; justify-content: space-between; font-size: 9px; color: var(--ink-faint); margin-bottom: 3px; letter-spacing: .5px; }
+  .time-bar-track { height: 6px; background: var(--paper-light); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+  .time-bar-fill { height: 100%; border-radius: 3px; transition: width .4s, background .3s; background: var(--gold); }
+
+  /* RANK ROW */
+  .rank-row { display: flex; align-items: center; gap: 8px; padding: 5px 16px 0; font-size: 10px; color: var(--ink-dim); }
+  .rank-label { white-space: nowrap; color: var(--gold); font-family: 'Playfair Display', serif; font-size: 11px; }
+  .rank-track { flex: 1; height: 4px; background: var(--paper-light); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+  .rank-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius: 3px; transition: width .5s; }
+
+  /* DAY STRIP */
+  .day-strip { background: var(--paper-light); border-bottom: 1px solid var(--border); padding: 5px 16px; display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-dim); }
+  .day-strip b { color: var(--ink); }
+
+  /* NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--paper); border-top: 2px solid var(--border); display: flex; z-index: 200; }
+  .nav-tab { flex: 1; padding: 14px 1px 6px; text-align: center; cursor: pointer; font-size: 7px; color: var(--ink-faint); letter-spacing: .3px; text-transform: uppercase; border: none; background: none; font-family: 'Courier Prime', monospace; transition: color .15s; position: relative; }
+  .nav-tab .ni { font-size: 16px; display: block; margin-bottom: 1px; }
+  .nav-tab.active { color: var(--gold); }
+  .nav-badge { position: absolute; top: 10px; right: calc(50% - 16px); background: var(--red-bright); color: #fff; font-size: 8px; font-weight: bold; border-radius: 8px; min-width: 14px; height: 14px; line-height: 14px; text-align: center; padding: 0 3px; display: none; font-family: 'Courier Prime', monospace; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── DESKTOP LAYOUT ── */
+  @media (min-width: 700px) {
+    body {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: auto;
+      align-items: start;
+      padding-bottom: 0;
+      min-height: 100vh;
+      gap: 0;
+    }
+
+    /* ── LEFT SIDEBAR: hotel identity panel ── */
+    .hotel-header {
+      grid-column: 1;
+      grid-row: 1 / 100;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-bottom: none;
+      border-right: 1px solid var(--border);
+      box-shadow: 4px 0 32px rgba(0,0,0,.5);
+      padding: 24px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      background: var(--paper);
+    }
+
+    .hotel-name {
+      font-size: 28px;
+      letter-spacing: 4px;
+      text-align: left;
+      line-height: 1.1;
+    }
+
+    .hotel-sub {
+      text-align: left;
+      margin-top: 4px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+    }
+
+    /* Star row left-aligned */
+    .star-row {
+      justify-content: flex-start;
+      margin-top: 14px;
+      gap: 8px;
+    }
+
+    .star { font-size: 20px; }
+
+    .star-tier {
+      font-size: 12px;
+      display: block;
+      margin-top: 6px;
+      color: var(--gold);
+    }
+
+    /* Rep bar full width in sidebar */
+    .rep-bar-track {
+      margin: 8px 0 0;
+      border-radius: 3px;
+    }
+
+    /* Stats: vertical stack, not pill row */
+    .header-row {
+      flex-direction: column;
+      gap: 0;
+      margin-top: 20px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .hpill {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(90,74,48,.3);
+      border-radius: 0;
+      padding: 8px 0;
+      font-size: 11px;
+      text-align: left;
+      color: var(--ink-dim);
+      letter-spacing: .5px;
+    }
+
+    .hpill:last-child { border-bottom: none; }
+
+    .hpill .v {
+      font-size: 15px;
+      display: inline;
+      font-weight: bold;
+      font-family: 'Playfair Display', serif;
+      line-height: 1;
+    }
+
+    /* Time bar in sidebar */
+    .time-bar-wrap {
+      padding: 16px 0 0;
+      margin-top: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .time-bar-label { font-size: 10px; }
+
+    /* Rank row in sidebar */
+    .rank-row {
+      padding: 12px 0 0;
+    }
+
+    /* Bottom of sidebar: version tag */
+    .sidebar-footer {
+      display: block !important;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(90,74,48,.3);
+      font-size: 10px;
+      color: var(--ink-faint);
+      letter-spacing: 1.5px;
+      font-style: italic;
+      text-align: left;
+    }
+
+    /* ── RIGHT COLUMN ── */
+    /* Nav becomes a proper horizontal tab bar at top of right column */
+    .bottom-nav {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: 0;
+      left: auto;
+      transform: none;
+      max-width: none;
+      width: 100%;
+      border-top: none;
+      border-bottom: 1px solid var(--border);
+      z-index: 150;
+      background: var(--paper);
+      box-shadow: 0 2px 12px rgba(0,0,0,.4);
+    }
+
+    .nav-tab {
+      padding: 14px 8px 12px;
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+
+    .nav-tab .ni {
+      font-size: 18px;
+      margin-bottom: 3px;
+    }
+
+    /* Day strip below nav */
+    .day-strip {
+      grid-column: 2;
+      grid-row: 2;
+      padding: 8px 24px;
+      font-size: 12px;
+      background: var(--paper-light);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Views below day strip */
+    .view {
+      grid-column: 2;
+      grid-row: 3;
+      padding: 0;
+    }
+
+    .section {
+      padding: 16px 24px 10px;
+    }
+
+    /* Cards breathe more on desktop */
+    .card {
+      margin-bottom: 10px;
+    }
+
+    /* Result modal: offset past sidebar */
+    /* Result modal: cover the right column but remain centered — use full viewport overlay so modal centers consistently */
+    .result-overlay {
+      left: 0;
+      width: 100vw;
+      max-width: 100vw;
+    }
+
+    /* Intro and over screens span full viewport */
+    .intro-screen,
+    .over-screen {
+      left: 0;
+      width: 100vw;
+      max-width: 100vw;
+    }
+
+    /* Warning/no-time banners full width of right col */
+    .no-time-banner {
+      margin: 0 24px 12px;
+    }
+  }
+
+  @media (min-width: 700px) and (min-height: 700px) {
+    .hotel-name { font-size: 30px; }
+  }
+
+  /* SECTIONS */
+  .section { padding: 12px 16px 6px; }
+  .sec-title { font-family: 'Playfair Display', serif; font-size: 12px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .sec-count { font-family: 'Courier Prime', monospace; font-size: 10px; color: var(--ink-dim); background: var(--paper-light); border: 1px solid var(--border); border-radius: 10px; padding: 1px 8px; }
+  .empty-state { text-align: center; padding: 18px; color: var(--ink-faint); font-style: italic; font-size: 12px; line-height: 1.6; }
+  .note { font-size: 11px; color: var(--ink-faint); font-style: italic; line-height: 1.6; padding: 0 0 10px; }
+
+  /* CARDS */
+  .card { background: var(--paper); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .cguest::before { background: var(--gold); }
+  .carrival::before { background: #9b59b6; }
+  .cghost::before { background: var(--ghost); }
+  .ctask::before { background: var(--green); }
+  .cevent::before { background: var(--red-bright); }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 8px; }
+  .card-name { font-family: 'Playfair Display', serif; font-size: 14px; color: var(--ink); line-height: 1.2; }
+  .ctag { font-size: 9px; letter-spacing: .8px; padding: 2px 7px; border-radius: 3px; text-transform: uppercase; font-weight: bold; white-space: nowrap; flex-shrink: 0; }
+  .ctag-vip { background: rgba(201,168,76,.2); color: var(--gold); border: 1px solid var(--gold); }
+  .ctag-trouble { background: rgba(231,76,60,.2); color: var(--red-bright); border: 1px solid var(--red-bright); }
+  .ctag-sensitive { background: rgba(126,200,227,.2); color: var(--ghost); border: 1px solid var(--ghost); }
+  .ctag-restless { background: rgba(231,76,60,.15); color: var(--red-bright); border: 1px solid rgba(231,76,60,.5); }
+  .ctag-calm { background: rgba(46,204,113,.15); color: var(--green-bright); border: 1px solid rgba(46,204,113,.5); }
+  .ctag-mischievous { background: rgba(126,200,227,.15); color: var(--ghost); border: 1px solid rgba(126,200,227,.5); }
+  .card-desc { font-size: 11px; color: var(--ink-dim); line-height: 1.5; font-style: italic; }
+  .mood-row { display: flex; align-items: center; gap: 6px; margin-top: 7px; }
+  .mood-label { font-size: 10px; color: var(--ink-faint); width: 32px; }
+  .mood-track { flex: 1; height: 5px; background: var(--paper-light); border-radius: 3px; overflow: hidden; }
+  .mood-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+  .mood-pct { font-size: 10px; width: 30px; text-align: right; }
+  .card-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .req-badge { font-size: 10px; background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.25); border-radius: 4px; padding: 5px 8px; margin-top: 7px; display: flex; justify-content: space-between; align-items: center; gap: 8px; line-height: 1.4; }
+  .req-text { flex: 1; font-style: italic; color: var(--ink-dim); font-size: 10px; }
+  .req-reward { color: var(--green-bright); white-space: nowrap; font-weight: bold; font-size: 10px; }
+  .req-cost { color: var(--gold); white-space: nowrap; font-size: 10px; }
+  .guest-maxed { border-color: rgba(240,192,64,.5); box-shadow: 0 0 12px rgba(240,192,64,.1); }
+
+  /* COST BADGE */
+  .cost-badge { display: inline-block; font-size: 9px; color: var(--gold); background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.3); border-radius: 3px; padding: 1px 6px; margin-left: 4px; }
+
+  /* BUTTONS */
+  .btn { font-family: 'Courier Prime', monospace; font-size: 11px; border-radius: 4px; padding: 7px 10px; border: none; cursor: pointer; transition: all .15s; flex: 1; min-width: 70px; text-align: center; letter-spacing: .3px; }
+  .btn:active { transform: scale(.95); opacity: .85; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-gold { background: var(--gold); color: #1a1208; font-weight: bold; }
+  .btn-ghost { background: rgba(126,200,227,.12); color: var(--ghost); border: 1px solid var(--ghost); }
+  .btn-red { background: rgba(231,76,60,.15); color: var(--red-bright); border: 1px solid var(--red-bright); }
+  .btn-dim { background: var(--paper-light); color: var(--ink-dim); border: 1px solid var(--border); }
+  .btn-purple { background: rgba(155,89,182,.15); color: #c39bd3; border: 1px solid #8e44ad; }
+  .btn-green { background: rgba(46,204,113,.15); color: var(--green-bright); border: 1px solid var(--green); }
+  .btn-full { width: 100%; flex: none; }
+  .btn-lg { padding: 13px 16px; font-size: 14px; letter-spacing: 1px; }
+
+  /* EVENTS */
+  .event-card { background: var(--paper); border: 2px solid var(--red-bright); border-radius: 6px; padding: 14px; margin-bottom: 10px; animation: pulse-border-red 2.5s infinite; }
+  @keyframes pulse-border-red { 0%,100%{border-color:rgba(231,76,60,.4)} 50%{border-color:var(--red-bright)} }
+  .event-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--red-bright); margin-bottom: 6px; }
+  .event-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--ink); margin-bottom: 8px; }
+  .event-body { font-size: 12px; color: var(--ink-dim); line-height: 1.6; margin-bottom: 12px; }
+  .choice-btn { width: 100%; text-align: left; padding: 10px 12px; background: var(--paper-mid); border: 1px solid var(--ink-faint); border-radius: 4px; color: var(--ink); font-family: 'Courier Prime', monospace; font-size: 12px; cursor: pointer; margin-bottom: 7px; display: block; transition: all .15s; line-height: 1.4; }
+  .choice-btn:active { background: rgba(201,168,76,.1); border-color: var(--gold); }
+  .choice-hint { font-style: italic; color: var(--ink-dim); font-size: 10px; display: block; margin-top: 3px; }
+
+  /* RESULT MODAL — centered */
+  .result-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.82); z-index: 400; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .result-overlay.hidden { display: none; }
+  .result-box { background: var(--paper); border: 1px solid var(--gold); border-radius: 10px; padding: 22px; width: 100%; max-width: 420px; max-height: 80vh; overflow-y: auto; box-shadow: 0 0 60px rgba(0,0,0,.9); }
+  .result-tag { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .rt-good { color: var(--green-bright); } .rt-bad { color: var(--red-bright); } .rt-ghost { color: var(--ghost); } .rt-neutral { color: var(--ink-dim); }
+  .result-body { font-size: 13px; color: var(--ink); line-height: 1.75; margin-bottom: 16px; font-family: 'Playfair Display', serif; font-style: italic; }
+  .effects { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .ep { font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: bold; }
+  .ep-pos { background: rgba(46,204,113,.15); color: var(--green-bright); border: 1px solid var(--green); }
+  .ep-neg { background: rgba(231,76,60,.15); color: var(--red-bright); border: 1px solid var(--red-bright); }
+  .ep-neu { background: var(--paper-light); color: var(--ink-dim); border: 1px solid var(--border); }
+
+  /* STATS PAGE */
+  .stat-block { background: var(--paper); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 10px; }
+  .stat-block-title { font-family: 'Playfair Display', serif; font-size: 12px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; color: var(--ink-dim); border-bottom: 1px solid rgba(90,74,48,.2); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .sv { color: var(--ink); font-weight: bold; font-family: 'Playfair Display', serif; }
+
+  /* SHOP */
+  .upgrade-card { background: var(--paper); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+  .upgrade-card.owned { border-color: var(--green); opacity: .75; }
+  .upgrade-name { font-family: 'Playfair Display', serif; font-size: 14px; color: var(--ink); margin-bottom: 4px; }
+  .upgrade-desc { font-size: 11px; color: var(--ink-dim); font-style: italic; line-height: 1.5; margin-bottom: 8px; }
+
+  /* LOG */
+  .log-line { font-size: 11px; padding: 5px 0; border-bottom: 1px solid rgba(90,74,48,.3); line-height: 1.4; }
+
+  /* INTRO */
+  .intro-screen { position: fixed; inset: 0; background: var(--bg); z-index: 500; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 28px; text-align: center; }
+  .intro-screen.hidden { display: none; }
+  .intro-name { font-family: 'Playfair Display', serif; font-size: 38px; color: var(--gold-bright); letter-spacing: 5px; line-height: 1.1; margin-bottom: 6px; text-shadow: 0 0 40px rgba(240,192,64,.25); }
+  .intro-sub { font-size: 10px; color: var(--ink-faint); font-style: italic; letter-spacing: 2px; margin-bottom: 28px; }
+  .intro-blurb { font-size: 13px; font-weight: 400; color: var(--ink-dim); line-height: 1.9; margin-bottom: 28px; max-width: 340px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 18px 0; }
+  .intro-blurb * { font-weight: 400 !important; }
+
+  /* GAME OVER */
+  .over-screen { position: fixed; inset: 0; background: rgba(26,18,8,.97); z-index: 500; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px; text-align: center; }
+  .over-screen.hidden { display: none; }
+  .ghost-shimmer { color: var(--ghost); text-shadow: 0 0 8px rgba(126,200,227,.3); }
+
+  /* ARRIVAL CARD */
+  .arrival-card { background: var(--paper); border: 1px solid #8e44ad; border-radius: 6px; padding: 12px; margin-bottom: 8px; position: relative; overflow: hidden; }
+  .arrival-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #9b59b6; }
+  .arrival-label { font-size: 9px; color: #c39bd3; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+
+  /* NO TIME WARNING */
+  .no-time-banner { background: rgba(231,76,60,.1); border: 1px solid rgba(231,76,60,.4); border-radius: 6px; padding: 10px 12px; margin: 0 16px 10px; font-size: 11px; color: var(--red-bright); text-align: center; font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div class="intro-screen" id="introScreen">
+  <div class="intro-name">THE<br>BELLMORE</div>
+  <div class="intro-sub">Portland, Oregon · Est. 1887</div>
+  <div class="intro-blurb">
+    You just started your first day as a <span style="color:var(--gold);font-weight:normal;font-style:normal">Bellhop</span> at The Bellmore, a once grand hotel that has seen better decades.<br><br>
+    Manage the living. Negotiate with the dead. Try not to get fired.
+  </div>
+  <button onclick="startGame()" style="background:none;border:none;padding:0;cursor:pointer;max-width:300px;width:100%;-webkit-tap-highlight-color:transparent">
+    <div style="border:2px solid var(--gold);border-radius:8px;overflow:hidden;box-shadow:0 0 40px rgba(201,168,76,.2),0 0 80px rgba(201,168,76,.08)">
+      <!-- The Bellmore — Victorian hotel illustration -->
+      <svg viewBox="0 0 200 150" width="100%" style="display:block;image-rendering:pixelated;background:#06040d" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- SKY — deep purple-black night -->
+        <rect width="200" height="150" fill="#06040d"/>
+
+        <!-- STARS -->
+        <rect x="12" y="6"  width="2" height="2" fill="#e8d5c0" opacity=".55"/>
+        <rect x="36" y="4"  width="2" height="2" fill="#e8d5c0" opacity=".4"/>
+        <rect x="58" y="10" width="2" height="2" fill="#e8d5c0" opacity=".5"/>
+        <rect x="82" y="5"  width="2" height="2" fill="#e8d5c0" opacity=".35"/>
+        <rect x="148" y="6" width="2" height="2" fill="#e8d5c0" opacity=".45"/>
+        <rect x="168" y="12" width="2" height="2" fill="#e8d5c0" opacity=".35"/>
+        <rect x="186" y="5" width="2" height="2" fill="#e8d5c0" opacity=".4"/>
+        <rect x="24" y="17" width="2" height="2" fill="#e8d5c0" opacity=".3"/>
+        <rect x="108" y="8" width="2" height="2" fill="#e8d5c0" opacity=".3"/>
+        <rect x="130" y="4" width="2" height="2" fill="#e8d5c0" opacity=".25"/>
+
+        <!-- MOON — pixel circle, slightly eerie yellow -->
+        <rect x="174" y="8"  width="6"  height="2"  fill="#d8cc60" opacity=".7"/>
+        <rect x="172" y="10" width="10" height="6"  fill="#d8cc60" opacity=".7"/>
+        <rect x="174" y="16" width="6"  height="2"  fill="#d8cc60" opacity=".7"/>
+
+        <!-- BARE TREE left — spindly, gothic -->
+        <rect x="8"  y="92"  width="4" height="32" fill="#120e06"/>
+        <rect x="4"  y="80"  width="2" height="14" fill="#120e06"/>
+        <rect x="4"  y="80"  width="10" height="2" fill="#120e06"/>
+        <rect x="14" y="82"  width="2" height="10" fill="#120e06"/>
+        <rect x="14" y="82"  width="6"  height="2" fill="#120e06"/>
+        <rect x="4"  y="74"  width="2" height="6"  fill="#120e06"/>
+        <rect x="2"  y="74"  width="4" height="2"  fill="#120e06"/>
+        <rect x="6"  y="70"  width="2" height="4"  fill="#120e06"/>
+        <rect x="6"  y="70"  width="6" height="2"  fill="#120e06"/>
+
+        <!-- LAMP POST right -->
+        <rect x="183" y="84"  width="2" height="40" fill="#241a08"/>
+        <rect x="181" y="80"  width="6" height="4"  fill="#241a08"/>
+        <rect x="180" y="76"  width="8" height="4"  fill="#3a2c18"/>
+        <!-- lamp housing -->
+        <rect x="180" y="70"  width="8" height="6"  fill="#2a2010"/>
+        <rect x="181" y="71"  width="6" height="4"  fill="#f0c040" opacity=".55"/>
+        <rect x="179" y="72"  width="10" height="2" fill="#f0c040" opacity=".15"/>
+        <rect x="181" y="76"  width="6" height="2"  fill="#f0c040" opacity=".1"/>
+
+        <!-- ═══ LEFT TURRET — tall witch-hat cone, NO finial, NO spike, NO pole ═══ -->
+        <!-- Conical roof only — stepped pyramid, top is 2px wide, no protrusion above -->
+        <rect x="43" y="12" width="2"  height="4"  fill="#1e1a36"/>
+        <rect x="41" y="16" width="6"  height="4"  fill="#252040"/>
+        <rect x="38" y="20" width="12" height="4"  fill="#1e1a36"/>
+        <rect x="34" y="24" width="20" height="4"  fill="#252040"/>
+        <rect x="30" y="28" width="28" height="3"  fill="#1e1a36"/>
+        <rect x="28" y="31" width="32" height="3"  fill="#252040"/>
+        <!-- Turret collar — ornate band -->
+        <rect x="27" y="34" width="34" height="3"  fill="#5a4a30"/>
+        <rect x="28" y="36" width="32" height="2"  fill="#6b5240" opacity=".5"/>
+        <!-- Turret body -->
+        <rect x="28" y="38" width="30" height="68" fill="#1c1208"/>
+        <rect x="28" y="38" width="3"  height="68" fill="#261808"/>
+        <rect x="55" y="38" width="3"  height="68" fill="#261808"/>
+        <!-- Turret window 1 — warm amber lit, arched -->
+        <rect x="32" y="42" width="22" height="2"  fill="#c9a84c" opacity=".2"/>
+        <rect x="30" y="44" width="26" height="14" fill="#c9a84c" opacity=".28"/>
+        <rect x="42" y="44" width="2"  height="14" fill="#1c1208" opacity=".5"/>
+        <!-- Turret window 2 — dark -->
+        <rect x="30" y="62" width="26" height="13" fill="#080604"/>
+        <!-- Turret window 3 — ghost blue Agnes -->
+        <rect x="32" y="79" width="22" height="2"  fill="#7ec8e3" opacity=".15"/>
+        <rect x="30" y="81" width="26" height="13" fill="#7ec8e3" opacity=".16"/>
+        <rect x="40" y="84" width="6"  height="8"  fill="#7ec8e3" opacity=".08"/>
+        <!-- Turret gingerbread collar teeth -->
+        <rect x="29" y="36" width="4" height="3" fill="#6b5240"/>
+        <rect x="35" y="36" width="4" height="3" fill="#6b5240"/>
+        <rect x="41" y="36" width="4" height="3" fill="#6b5240"/>
+        <rect x="47" y="36" width="4" height="3" fill="#6b5240"/>
+        <rect x="53" y="36" width="4" height="3" fill="#6b5240"/>
+
+        <!-- ═══ MAIN BUILDING ═══ -->
+        <rect x="56" y="36" width="116" height="72" fill="#1c1208"/>
+        <rect x="56" y="36" width="4"   height="72" fill="#261808"/>
+        <rect x="168" y="36" width="4"  height="72" fill="#261808"/>
+
+        <!-- ═══ GOTHIC MANSARD ROOF — deep purple-charcoal ═══ -->
+        <rect x="56"  y="32" width="116" height="4" fill="#201e38"/>
+        <rect x="58"  y="28" width="112" height="4" fill="#1a1830"/>
+        <rect x="61"  y="24" width="106" height="4" fill="#201e38"/>
+        <rect x="64"  y="20" width="100" height="4" fill="#181628"/>
+        <rect x="67"  y="17" width="94"  height="3" fill="#100e20"/>
+
+        <!-- POINTED MERLONS — gothic spires not flat battlements -->
+        <!-- Each merlon: base 8px wide, tapers to 2px point -->
+        <!-- Left group -->
+        <rect x="66"  y="11" width="8" height="6" fill="#201e38"/>
+        <rect x="68"  y="9"  width="4" height="4" fill="#1a1830"/>
+        <rect x="70"  y="7"  width="2" height="2" fill="#181628"/>
+
+        <rect x="80"  y="11" width="8" height="6" fill="#201e38"/>
+        <rect x="82"  y="9"  width="4" height="4" fill="#1a1830"/>
+        <rect x="84"  y="7"  width="2" height="2" fill="#181628"/>
+
+        <rect x="94"  y="11" width="8" height="6" fill="#201e38"/>
+        <rect x="96"  y="9"  width="4" height="4" fill="#1a1830"/>
+        <rect x="98"  y="7"  width="2" height="2" fill="#181628"/>
+
+        <!-- gap for dormer -->
+
+        <rect x="116" y="11" width="8" height="6" fill="#201e38"/>
+        <rect x="118" y="9"  width="4" height="4" fill="#1a1830"/>
+        <rect x="120" y="7"  width="2" height="2" fill="#181628"/>
+
+        <rect x="130" y="11" width="8" height="6" fill="#201e38"/>
+        <rect x="132" y="9"  width="4" height="4" fill="#1a1830"/>
+        <rect x="134" y="7"  width="2" height="2" fill="#181628"/>
+
+        <rect x="144" y="11" width="8" height="6" fill="#201e38"/>
+        <rect x="146" y="9"  width="4" height="4" fill="#1a1830"/>
+        <rect x="148" y="7"  width="2" height="2" fill="#181628"/>
+
+        <!-- RIGHT SIDE SMALL SPIRE — asymmetric Haunted Mansion detail -->
+        <!-- Thin pointed spire rising from right end of roofline, NO ball NO cross just a sharp cone -->
+        <rect x="165" y="20" width="6"  height="4"  fill="#201e38"/>
+        <rect x="166" y="16" width="4"  height="4"  fill="#1a1830"/>
+        <rect x="167" y="12" width="2"  height="4"  fill="#181628"/>
+
+        <!-- CENTER DORMER — Agnes, ghost blue -->
+        <rect x="97"  y="9"  width="4"  height="6"  fill="#181628"/>
+        <rect x="95"  y="15" width="8"  height="4"  fill="#1a1830"/>
+        <rect x="93"  y="19" width="12" height="4"  fill="#181628"/>
+        <rect x="91"  y="23" width="16" height="9"  fill="#1c1208"/>
+        <rect x="93"  y="21" width="12" height="2"  fill="#7ec8e3" opacity=".3"/>
+        <rect x="93"  y="23" width="12" height="8"  fill="#7ec8e3" opacity=".22"/>
+        <rect x="97"  y="24" width="4"  height="6"  fill="#7ec8e3" opacity=".14"/>
+
+        <!-- CORNICE BANDS with gingerbread brackets -->
+        <rect x="56"  y="36" width="116" height="2" fill="#5a4a30"/>
+        <rect x="56"  y="60" width="116" height="2" fill="#3a2c18"/>
+        <rect x="56"  y="84" width="116" height="2" fill="#3a2c18"/>
+
+        <!-- VERGEBOARD — sawtooth on mansard edges -->
+        <rect x="56" y="24" width="4" height="2" fill="#6b5240"/>
+        <rect x="58" y="26" width="2" height="2" fill="#3a2c18"/>
+        <rect x="56" y="28" width="4" height="2" fill="#6b5240"/>
+        <rect x="58" y="30" width="2" height="2" fill="#3a2c18"/>
+        <rect x="56" y="32" width="4" height="2" fill="#6b5240"/>
+        <rect x="168" y="24" width="4" height="2" fill="#6b5240"/>
+        <rect x="168" y="26" width="2" height="2" fill="#3a2c18"/>
+        <rect x="168" y="28" width="4" height="2" fill="#6b5240"/>
+        <rect x="168" y="30" width="2" height="2" fill="#3a2c18"/>
+        <rect x="168" y="32" width="4" height="2" fill="#6b5240"/>
+
+        <!-- EAVE BRACKETS under main cornice -->
+        <rect x="64"  y="32" width="2" height="4" fill="#5a4a30"/>
+        <rect x="63"  y="35" width="4" height="2" fill="#4a3820"/>
+        <rect x="80"  y="32" width="2" height="4" fill="#5a4a30"/>
+        <rect x="79"  y="35" width="4" height="2" fill="#4a3820"/>
+        <rect x="96"  y="32" width="2" height="4" fill="#5a4a30"/>
+        <rect x="95"  y="35" width="4" height="2" fill="#4a3820"/>
+        <rect x="112" y="32" width="2" height="4" fill="#5a4a30"/>
+        <rect x="111" y="35" width="4" height="2" fill="#4a3820"/>
+        <rect x="128" y="32" width="2" height="4" fill="#5a4a30"/>
+        <rect x="127" y="35" width="4" height="2" fill="#4a3820"/>
+        <rect x="144" y="32" width="2" height="4" fill="#5a4a30"/>
+        <rect x="143" y="35" width="4" height="2" fill="#4a3820"/>
+        <rect x="160" y="32" width="2" height="4" fill="#5a4a30"/>
+        <rect x="159" y="35" width="4" height="2" fill="#4a3820"/>
+
+        <!-- FLOOR 2 WINDOWS — tall, some lit, pediments above -->
+        <!-- Pediment hoods -->
+        <rect x="62"  y="37" width="14" height="2" fill="#4a3820"/>
+        <rect x="64"  y="35" width="10" height="2" fill="#5a4a30"/>
+        <rect x="66"  y="33" width="6"  height="2" fill="#6b5240"/>
+        <rect x="84"  y="37" width="14" height="2" fill="#4a3820"/>
+        <rect x="86"  y="35" width="10" height="2" fill="#5a4a30"/>
+        <rect x="88"  y="33" width="6"  height="2" fill="#6b5240"/>
+        <rect x="130" y="37" width="14" height="2" fill="#4a3820"/>
+        <rect x="132" y="35" width="10" height="2" fill="#5a4a30"/>
+        <rect x="134" y="33" width="6"  height="2" fill="#6b5240"/>
+        <rect x="152" y="37" width="14" height="2" fill="#4a3820"/>
+        <rect x="154" y="35" width="10" height="2" fill="#5a4a30"/>
+        <rect x="156" y="33" width="6"  height="2" fill="#6b5240"/>
+        <!-- Window panes -->
+        <rect x="62"  y="39" width="14" height="19" fill="#080604"/>
+        <rect x="84"  y="39" width="14" height="19" fill="#c9a84c" opacity=".22"/>
+        <rect x="90"  y="39" width="2"  height="19" fill="#c9a84a" opacity=".08"/>
+        <rect x="130" y="39" width="14" height="19" fill="#c9a84c" opacity=".16"/>
+        <rect x="152" y="39" width="14" height="19" fill="#080604"/>
+
+        <!-- BAY WINDOW center floor 2 -->
+        <rect x="100" y="37" width="28" height="22" fill="#201408"/>
+        <rect x="100" y="37" width="28" height="2"  fill="#5a4a30"/>
+        <rect x="98"  y="37" width="2"  height="22" fill="#3a2c18"/>
+        <rect x="128" y="37" width="2"  height="22" fill="#3a2c18"/>
+        <rect x="102" y="40" width="6"  height="16" fill="#080604"/>
+        <rect x="111" y="40" width="6"  height="16" fill="#c9a84c" opacity=".3"/>
+        <rect x="120" y="40" width="6"  height="16" fill="#080604"/>
+        <rect x="100" y="58" width="28" height="2"  fill="#5a4a30"/>
+
+        <!-- FLOOR 2 EAVE BRACKETS -->
+        <rect x="62"  y="56" width="2" height="4" fill="#3a2c18"/>
+        <rect x="61"  y="59" width="4" height="2" fill="#2e2210"/>
+        <rect x="84"  y="56" width="2" height="4" fill="#3a2c18"/>
+        <rect x="83"  y="59" width="4" height="2" fill="#2e2210"/>
+        <rect x="130" y="56" width="2" height="4" fill="#3a2c18"/>
+        <rect x="129" y="59" width="4" height="2" fill="#2e2210"/>
+        <rect x="152" y="56" width="2" height="4" fill="#3a2c18"/>
+        <rect x="151" y="59" width="4" height="2" fill="#2e2210"/>
+
+        <!-- FLOOR 1 WINDOWS -->
+        <rect x="62"  y="62" width="14" height="20" fill="#c9a84c" opacity=".18"/>
+        <rect x="68"  y="62" width="2"  height="20" fill="#c9a84a" opacity=".07"/>
+        <rect x="82"  y="62" width="14" height="20" fill="#080604"/>
+        <rect x="132" y="62" width="14" height="20" fill="#080604"/>
+        <rect x="152" y="62" width="14" height="20" fill="#c9a84c" opacity=".2"/>
+        <rect x="158" y="62" width="2"  height="20" fill="#c9a84a" opacity=".07"/>
+
+        <!-- ═══ ENTRANCE — Victorian porch ═══ -->
+        <!-- Porch fretwork canopy -->
+        <rect x="94"  y="78" width="40" height="2"  fill="#4a3820"/>
+        <rect x="92"  y="76" width="44" height="2"  fill="#5a4a30"/>
+        <rect x="94"  y="78" width="40" height="2"  fill="#4a3820"/>
+        <!-- Fretwork drops -->
+        <rect x="94"  y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="98"  y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="102" y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="106" y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="110" y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="114" y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="118" y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="122" y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="126" y="78" width="2" height="4" fill="#5a4a30"/>
+        <rect x="130" y="78" width="2" height="4" fill="#5a4a30"/>
+        <!-- diamond tips -->
+        <rect x="95"  y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="99"  y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="103" y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="107" y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="111" y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="115" y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="119" y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="123" y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <rect x="127" y="82" width="2" height="2" fill="#6b5240" opacity=".8"/>
+        <!-- Two columns -->
+        <rect x="92"  y="80" width="3"  height="24" fill="#3a2c18"/>
+        <rect x="133" y="80" width="3"  height="24" fill="#3a2c18"/>
+        <rect x="90"  y="78" width="7"  height="2"  fill="#4a3820"/>
+        <rect x="131" y="78" width="7"  height="2"  fill="#4a3820"/>
+        <!-- Column bases -->
+        <rect x="90"  y="102" width="7" height="2"  fill="#4a3820"/>
+        <rect x="131" y="102" width="7" height="2"  fill="#4a3820"/>
+        <!-- Arched doorway -->
+        <rect x="96"  y="82" width="36" height="22" fill="#060402"/>
+        <rect x="98"  y="80" width="32" height="2"  fill="#060402"/>
+        <rect x="100" y="78" width="28" height="2"  fill="#060402"/>
+        <rect x="102" y="76" width="24" height="2"  fill="#060402"/>
+        <!-- Double doors -->
+        <rect x="98"  y="84" width="15" height="18" fill="#100c07"/>
+        <rect x="115" y="84" width="15" height="18" fill="#100c07"/>
+        <!-- Door glass transoms -->
+        <rect x="100" y="86" width="11" height="8"  fill="#c9a84c" opacity=".13"/>
+        <rect x="117" y="86" width="11" height="8"  fill="#c9a84c" opacity=".13"/>
+        <!-- Door handles -->
+        <rect x="112" y="92" width="2"  height="4"  fill="#6b5240"/>
+        <rect x="115" y="92" width="2"  height="4"  fill="#6b5240"/>
+        <!-- Entrance pendant lamp -->
+        <rect x="112" y="70" width="4"  height="8"  fill="#1a1408"/>
+        <rect x="113" y="71" width="2"  height="6"  fill="#f0c040" opacity=".65"/>
+        <rect x="110" y="74" width="8"  height="2"  fill="#f0c040" opacity=".18"/>
+        <!-- Hotel sign -->
+        <rect x="100" y="67" width="28" height="8"  fill="#1c1208"/>
+        <rect x="102" y="69" width="24" height="4"  fill="#241a08"/>
+        <rect x="104" y="70" width="2"  height="2"  fill="#c9a84c" opacity=".35"/>
+        <rect x="108" y="70" width="2"  height="2"  fill="#c9a84c" opacity=".35"/>
+        <rect x="112" y="70" width="2"  height="2"  fill="#c9a84c" opacity=".35"/>
+        <rect x="116" y="70" width="2"  height="2"  fill="#c9a84c" opacity=".35"/>
+        <rect x="120" y="70" width="2"  height="2"  fill="#c9a84c" opacity=".35"/>
+
+        <!-- STEPS -->
+        <rect x="88"  y="104" width="52" height="3" fill="#3a2c18"/>
+        <rect x="84"  y="107" width="60" height="3" fill="#2e2210"/>
+
+        <!-- IRON FENCE -->
+        <rect x="60"  y="106" width="24" height="2" fill="#261808"/>
+        <rect x="62"  y="102" width="2"  height="6" fill="#3a2c18"/>
+        <rect x="68"  y="102" width="2"  height="6" fill="#3a2c18"/>
+        <rect x="74"  y="102" width="2"  height="6" fill="#3a2c18"/>
+        <rect x="80"  y="102" width="2"  height="6" fill="#3a2c18"/>
+        <!-- Fence spear tips -->
+        <rect x="62"  y="100" width="2"  height="2" fill="#4a3820"/>
+        <rect x="68"  y="100" width="2"  height="2" fill="#4a3820"/>
+        <rect x="74"  y="100" width="2"  height="2" fill="#4a3820"/>
+        <rect x="80"  y="100" width="2"  height="2" fill="#4a3820"/>
+        <rect x="144" y="106" width="24" height="2" fill="#261808"/>
+        <rect x="144" y="102" width="2"  height="6" fill="#3a2c18"/>
+        <rect x="150" y="102" width="2"  height="6" fill="#3a2c18"/>
+        <rect x="156" y="102" width="2"  height="6" fill="#3a2c18"/>
+        <rect x="162" y="102" width="2"  height="6" fill="#3a2c18"/>
+        <rect x="144" y="100" width="2"  height="2" fill="#4a3820"/>
+        <rect x="150" y="100" width="2"  height="2" fill="#4a3820"/>
+        <rect x="156" y="100" width="2"  height="2" fill="#4a3820"/>
+        <rect x="162" y="100" width="2"  height="2" fill="#4a3820"/>
+
+        <!-- GROUND AND MIST -->
+        <rect x="0"   y="110" width="200" height="40" fill="#060402"/>
+        <rect x="0"   y="108" width="200" height="4"  fill="#0c0806" opacity=".9"/>
+        <rect x="0"   y="104" width="70"  height="4"  fill="#120e08" opacity=".5"/>
+        <rect x="130" y="105" width="70" height="3"  fill="#120e08" opacity=".45"/>
+        <rect x="40"  y="106" width="120" height="2"  fill="#120e08" opacity=".3"/>
+
+      </svg>
+      <!-- Button label -->
+      <div style="padding:12px 0;background:linear-gradient(180deg,#1f1508,#181006);border-top:1px solid var(--gold);font-family:'Playfair Display',serif;font-size:15px;letter-spacing:4px;color:var(--gold-bright);text-align:center">
+        BEGIN SHIFT
+      </div>
+    </div>
+  </button>
+  <div style="margin-top:14px;font-size:10px;color:var(--ink-faint);letter-spacing:2px;font-style:italic">v0.9.1 · Public Beta</div>
+  </div>
+
+<!-- GAME OVER -->
+<div class="over-screen hidden" id="overScreen">
+  <div style="font-size:52px;margin-bottom:14px">👻</div>
+  <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--red-bright);letter-spacing:3px;margin-bottom:10px" id="overHeadline">TERMINATED</div>
+  <div style="font-size:13px;color:var(--ink-dim);margin-bottom:8px;font-style:italic;line-height:1.7;max-width:300px" id="overMsg"></div>
+  <div style="font-size:11px;color:var(--ink-faint);margin-bottom:32px" id="overStats"></div>
+  <button class="btn btn-gold btn-lg" onclick="resetGame()" style="padding:14px 40px;border-radius:6px;border:none">Try Again</button>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="result-overlay hidden" id="resultOverlay" onclick="closeResult()">
+  <div class="result-box" onclick="event.stopPropagation()">
+    <div class="result-tag" id="rTag"></div>
+    <div class="result-body" id="rBody"></div>
+    <div class="effects" id="rFx"></div>
+    <button class="btn btn-gold btn-full" onclick="closeResult()" style="border:none">Noted</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="hotel-header">
+  <div class="hotel-name">The Bellmore</div>
+  <div class="hotel-sub">Portland, Oregon · Est. 1887</div>
+  <div class="star-row">
+    <div class="stars" id="starDisplay"></div>
+  </div>
+  <div class="star-tier" id="starTier" style="font-size:11px;color:var(--gold);font-family:'Playfair Display',serif;margin-top:4px">Questionable</div>
+  <div class="rep-bar-track" style="margin:8px 0 0"><div class="rep-bar-fill" id="repBar" style="width:20%"></div></div>
+  <div class="header-row">
+    <div class="hpill htips">Tips<span class="v" id="tipsVal">$0</span></div>
+    <div class="hpill hghosts">In House<span class="v" id="occupancyVal">0</span></div>
+    <div class="hpill hseason">Season<span class="v" id="seasonVal">🍂 Fall</span></div>
+    <div class="hpill htime">Shift Hours<span class="v" id="timeVal">8h</span></div>
+  </div>
+  <div class="time-bar-wrap">
+    <div class="time-bar-label">
+      <span>Shift remaining</span>
+      <span id="timeBarLabel">8 of 8</span>
+    </div>
+    <div class="time-bar-track"><div class="time-bar-fill" id="timeBar" style="width:100%"></div></div>
+  </div>
+  <div class="rank-row">
+    <span class="rank-label" id="rankLabel">Bellhop</span>
+    <div class="rank-track"><div class="rank-fill" id="rankFill" style="width:0%"></div></div>
+    <span style="font-size:10px;color:var(--ink-faint)" id="rankProg">0/10 XP</span>
+  </div>
+  <div class="sidebar-footer" style="display:none">
+    © 2026 Gumbysoft<br>
+    <span style="opacity:.6">v0.9.1 · Public Beta</span>
+  </div>
+</div>
+
+<div class="day-strip">
+  <span>Day <b id="dayVal">1</b></span>
+  <span id="condStr" style="font-style:italic;color:var(--ink-faint)">Quiet morning</span>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-tab active" onclick="sv('today')" id="tab-today"><span class="ni">📅</span>Today<span class="nav-badge" id="badge-today"></span></button>
+  <button class="nav-tab" onclick="sv('guests')" id="tab-guests"><span class="ni">🧳</span>Guests<span class="nav-badge" id="badge-guests"></span></button>
+  <button class="nav-tab" onclick="sv('ghosts')" id="tab-ghosts"><span class="ni">👻</span>Ghosts<span class="nav-badge" id="badge-ghosts"></span></button>
+  <button class="nav-tab" onclick="sv('stats')" id="tab-stats"><span class="ni">📊</span>Stats</button>
+  <button class="nav-tab" onclick="sv('upgrades')" id="tab-upgrades"><span class="ni">🛎</span>Upgrades</button>
+</div>
+
+<!-- TODAY VIEW -->
+<div class="view active" id="view-today">
+  <div class="section">
+    <div id="noTimeBanner"></div>
+    <div id="activeEventSlot"></div>
+    <div id="arrivalNotifSlot"></div>
+    <div class="sec-title">Tasks <span class="sec-count" id="taskCount">0</span></div>
+    <div id="taskList"></div>
+  </div>
+  <div class="section" style="padding-top:4px">
+    <div class="sec-title">Today's Log</div>
+    <div id="todayLog"></div>
+  </div>
+  <div style="padding:4px 16px 14px">
+    <button class="btn btn-dim btn-full btn-lg" onclick="advanceDay()" style="border:1px solid var(--border)">Close Out the Day</button>
+  </div>
+</div>
+
+<!-- GUESTS VIEW -->
+<div class="view" id="view-guests">
+  <div class="section">
+    <div class="sec-title">Arriving Today <span class="sec-count" id="arrivalCount">0</span></div>
+    <div id="arrivalList"></div>
+    <div class="sec-title" style="margin-top:8px">Checked In <span class="sec-count" id="guestCount">0</span></div>
+    <div id="guestList"></div>
+  </div>
+</div>
+
+<!-- GHOSTS VIEW -->
+<div class="view" id="view-ghosts">
+  <div class="section">
+    <div class="sec-title">Permanent Residents <span class="sec-count" id="ghostCount">0</span></div>
+    <p class="note">Ghost mood shapes the entire floor. A restless permanent resident ruins sleep for everyone. A content one might actually help.</p>
+    <div id="ghostList"></div>
+  </div>
+</div>
+
+<!-- STATS VIEW -->
+<div class="view" id="view-stats">
+  <div class="section">
+    <div class="stat-block">
+      <div class="stat-block-title">Your Record</div>
+      <div class="stat-row"><span>Rank</span><span class="sv" id="statRank" style="font-weight:normal">Bellhop</span></div>
+      <div class="stat-row"><span>Days Worked</span><span class="sv" id="statDays">1</span></div>
+      <div class="stat-row"><span>Total Tips Earned</span><span class="sv" id="statTips">$0</span></div>
+      <div class="stat-row"><span>Rank Progress</span><span class="sv" id="statXP">0/10 XP</span></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-block-title">Hotel Standing</div>
+      <div class="stat-row"><span>Star Rating</span><span class="sv" id="statStars">★ Questionable</span></div>
+      <div class="stat-row"><span>Season</span><span class="sv" id="statSeason">Fall</span></div>
+      <div class="stat-row"><span>Day</span><span class="sv" id="statDay">1</span></div>
+      <div class="stat-row"><span>Guests In House</span><span class="sv" id="statGuests">0</span></div>
+      <div class="stat-row"><span>Permanent Residents</span><span class="sv" id="statGhosts">2</span></div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-block-title">Ledger</div>
+      <div id="logList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADES VIEW -->
+<div class="view" id="view-upgrades">
+  <div class="section">
+    <div class="sec-title">Hotel Upgrades</div>
+    <p class="note">Spend tips on improvements. You have <span id="shopTips" style="color:var(--green-bright);font-style:normal;font-weight:bold">$0</span> available.</p>
+    <div id="shopList"></div>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────
+// DATA
+// ────────────────────────────────────────────
+
+const SHIFT_HOURS = 8;
+
+const starTiers = {1:'Questionable',2:'Adequate',3:'Respectable',4:'Distinguished',5:'Grand'};
+
+const seasons = ['Fall','Winter','Spring','Summer'];
+const seasonIcons = {'Fall':'🍂','Winter':'❄️','Spring':'🌧','Summer':'☀️'};
+
+const conditions = [
+  'Quiet morning','Fog rolling in from the coast','Pipes groaning all night',
+  'A strange stillness','Rain against the windows','Someone playing piano badly',
+  'The elevator stuck again','Smell of lavender on Floor 1','Cold snap, no explanation',
+  'A crow on the fire escape watching','Guests whispering in the lobby','The boiler running hot',
+];
+
+const stopByLines = [
+  name => `You knock on the door of ${name}. A pause, then: "Everything is fine, thank you." You note the untouched dinner tray just inside the door and say nothing.`,
+  name => `You bring a fresh ice bucket to ${name} unprompted. They seem surprised anyone noticed. Small things matter here.`,
+  name => `You stop by ${name}'s room with the evening newspaper. They accept it without looking up. You consider that a win.`,
+  name => `${name} opens the door before you knock. They were standing right there. You both pretend this is normal.`,
+  name => `You check in on ${name}. They ask if the hotel has always made that sound. You tell them the building settles at night. This is technically true.`,
+  name => `A brief knock, a brief exchange. ${name} says everything is fine. The way they say it suggests it is mostly fine.`,
+  name => `You bring extra towels to ${name}. They did not ask for them. They needed them. This is the job.`,
+  name => `${name} catches you in the hallway and asks about a good place to eat nearby. You make a recommendation. They look unconvinced but thank you anyway.`,
+];
+
+const upgradeDefs = [
+  { id:'flowers', name:'Fresh Lobby Flowers', cost:20, desc:'A better first impression. +4 hotel rating at the start of each day.' },
+  { id:'tipjar', name:'Tip Jar at Front Desk', cost:30, desc:'Happy checkouts leave more. +$6 per satisfied guest checkout.' },
+  { id:'incense', name:'Incense for Room 7', cost:25, desc:'Agnes appreciates it. Her mood starts each day 15 points higher.' },
+  { id:'passkey', name:'The Master Passkey', cost:40, desc:'Unlocks Room 12. Something is in there.' },
+  { id:'press', name:'Local Press Contact', cost:50, desc:'Bad reviews hit 50% softer. Someone at the Oregonian owes you.' },
+  { id:'auditor', name:'Hire a Night Auditor', cost:60, desc:'Incomplete tasks no longer cost hotel rating overnight.' },
+  { id:'bellcart', name:'New Bell Cart', cost:35, desc:'Checking in guests costs 0 hours instead of 1. First impressions, faster.' },
+  { id:'buyhotel', name:'Acquire the Property', cost:0, desc:'Purchase The Bellmore outright. The deed transfers to your name. You collect a share of daily hotel revenue on top of tips, and the permanent residents become your legal responsibility. Entirely.', special:true },
+];
+
+const guestPool = [
+  // Original cast
+  { name:'Mr. Alistair Dowd', tag:'vip', tagLabel:'VIP', desc:'Retired attorney. Sleeps exactly eight hours. Any noise at all and the Yelp review writes itself.', happiness:70, room:5, request:'Extra pillow and complete silence after 9pm', reqReward:12, stayDays:3 },
+  { name:'The Pemberton Sisters', tag:'trouble', tagLabel:'Trouble', desc:'Three sisters here for a funeral, already arguing about the estate. Loudly. In the hallway.', happiness:55, room:8, request:'Separate dinner reservations since they cannot sit together', reqReward:8, stayDays:2 },
+  { name:'Professor Weir', tag:'sensitive', tagLabel:'Sensitive', desc:'Parapsychologist. Here for the atmosphere. Voice recorders left in every corridor.', happiness:80, room:11, request:'Access to any locked room he can study', reqReward:15, stayDays:4 },
+  { name:'Beatrice Moss', tag:null, tagLabel:null, desc:'Travel writer. Whatever happens here ends up in print. Be memorable for the right reasons.', happiness:65, room:3, request:'A local story worth writing about', reqReward:20, stayDays:2 },
+  { name:'Mr. and Mrs. Caldwell', tag:'vip', tagLabel:'VIP', desc:'40th anniversary. He is nearly deaf. She is pretending the mirror shows nothing unusual.', happiness:75, room:2, request:'A bottle of champagne sent up, discreetly', reqReward:18, stayDays:3 },
+  { name:'Derek Flint', tag:'trouble', tagLabel:'Trouble', desc:'Influencer with 80k followers. Already filming everything. Just asked if the ghost has an Instagram.', happiness:60, room:6, request:'Permission to film the third floor hallway', reqReward:10, stayDays:2 },
+  { name:'Sister Marguerite', tag:null, tagLabel:null, desc:'A nun on sabbatical. Completely unbothered by the supernatural. More concerning than comforting.', happiness:85, room:9, request:'A quiet space for morning meditation', reqReward:8, stayDays:3 },
+  { name:'Dr. Finch Haywood', tag:null, tagLabel:null, desc:'Cardiologist attending a nearby conference. Brought twelve bags for a two night stay.', happiness:65, room:4, request:'Fridge stocked with mineral water, no ice', reqReward:10, stayDays:2 },
+  { name:'The Kowalski Family', tag:'trouble', tagLabel:'Trouble', desc:'Parents and three kids. The youngest has been having full conversations with someone no one else can see.', happiness:60, room:3, request:'Rollaway bed and a reasonable explanation for the noises', reqReward:12, stayDays:3 },
+  { name:'Marcus Bellany', tag:'vip', tagLabel:'VIP', desc:'City councilman checking in under a false name. This fools no one. Especially not Agnes.', happiness:70, room:10, request:'Total discretion. Nobody acknowledges who he is.', reqReward:25, stayDays:2 },
+  { name:'Ruth Halverson', tag:null, tagLabel:null, desc:'Retired schoolteacher from Medford. Brought a week of crosswords and a flask. Unflappable.', happiness:72, room:6, request:'Extra blanket and no wake up calls, ever', reqReward:8, stayDays:4 },
+  { name:'Theo and Priya Nair', tag:'vip', tagLabel:'VIP', desc:'Architects from San Francisco. Taking notes on every inch of the building for reasons they have not explained.', happiness:68, room:14, request:'Original floor plans or blueprints if available', reqReward:22, stayDays:3 },
+  { name:'Gus Okafor', tag:'trouble', tagLabel:'Trouble', desc:'True crime podcaster. Booked specifically because of the history. His microphone is always on.', happiness:58, room:6, request:'Any documented incident reports from the past thirty years', reqReward:14, stayDays:3 },
+  { name:'Lenora Banks', tag:'sensitive', tagLabel:'Sensitive', desc:'Psychic medium, or so she says. She walked through the lobby, stopped, and said "oh, there are several."', happiness:75, room:8, request:'To be left entirely alone between 2am and 4am', reqReward:10, stayDays:2 },
+  { name:'Mr. Hideo Tanaka', tag:'vip', tagLabel:'VIP', desc:'Retired diplomat. Precise, courteous, and utterly unreadable. Something about him suggests he has handled stranger situations than this.', happiness:80, room:13, request:'Green tea. Actual green tea, not the bag in the drawer.', reqReward:16, stayDays:3 },
+  { name:'Candace Pruitt', tag:null, tagLabel:null, desc:'Landscape painter here for the light. Has set up an easel in the hallway. Management has not yet addressed this.', happiness:70, room:5, request:'Natural light access on Floor 2 in the early morning', reqReward:9, stayDays:4 },
+  { name:'The Osworth Twins', tag:'trouble', tagLabel:'Trouble', desc:'Identical. Both deny being the one who broke the lamp. Neither is convincing.', happiness:50, room:7, request:'A second key to their room, no questions asked', reqReward:8, stayDays:2 },
+  { name:'Dr. Sylvia Crane', tag:'sensitive', tagLabel:'Sensitive', desc:'Folklorist writing a paper on localized hauntings. Treats the whole situation with the tone of someone discussing crop yields.', happiness:78, room:10, request:'Access to whatever passes for an archive here', reqReward:18, stayDays:4 },
+  { name:'Ronnie Delacroix', tag:null, tagLabel:null, desc:'Jazz musician between gigs. Heard there was a lounge. Was disappointed there was not. Is staying anyway.', happiness:65, room:4, request:'A piano, or at minimum something to listen to', reqReward:12, stayDays:3 },
+  { name:'The Yamamura Party', tag:'vip', tagLabel:'VIP', desc:'Corporate retreat for a Portland tech firm. Eight people. Matching lanyards. They keep asking if the wifi password is ironic.', happiness:62, room:15, request:'A private meeting room with a projector that actually works', reqReward:20, stayDays:2 },
+  { name:'Mrs. Harriet Bloom', tag:null, tagLabel:null, desc:'Widow, 81, celebrating her birthday alone by choice. Sharp as a tack and deeply suspicious of anyone who seems cheerful.', happiness:68, room:2, request:'Breakfast in her room at exactly 7:30am, not 7:25 or 7:35', reqReward:14, stayDays:3 },
+  { name:'Officer Diego Reyes', tag:null, tagLabel:null, desc:'Off duty detective staying over after a late case. Claims he is just here to sleep. His eyes suggest he is also working.', happiness:72, room:9, request:'Quiet. Just quiet.', reqReward:8, stayDays:2 },
+  // Cultural references — subtle
+  { name:'The Aldrich Girls', tag:'sensitive', tagLabel:'Sensitive', desc:'Twins, maybe nine years old. Matching blue coats. They arrived holding hands and have not let go. They asked the front desk if they could play here forever.', happiness:65, room:17, request:'Someone to come find them if they get lost in the building', reqReward:5, stayDays:3 },
+  { name:'W. Torrington', tag:'trouble', tagLabel:'Trouble', desc:'Has been here six weeks. Manuscript on the desk. Has not left the room in four days. The DO NOT DISTURB sign is held on with masking tape.', happiness:40, room:11, request:'More paper. Just more paper.', reqReward:6, stayDays:7 },
+  { name:'Lloyd Beaumont', tag:'vip', tagLabel:'VIP', desc:'Impeccably dressed. Has been at the bar since check-in. Nobody has seen him eat. He knows everyone\'s name before they introduce themselves.', happiness:90, room:1, request:'Whatever the guest in Room 11 is having', reqReward:30, stayDays:2 },
+  { name:'Mr. and Mrs. Torrence', tag:null, tagLabel:null, desc:'Honeymoon couple. He is quiet and watchful in a way that feels like effort. She laughs easily, possibly to compensate.', happiness:70, room:17, request:'A typewriter, if one exists anywhere in the building', reqReward:15, stayDays:5 },
+  { name:'Clarice Voss', tag:'sensitive', tagLabel:'Sensitive', desc:'FBI consultant on leave. The way she observes a room suggests she is filing everything for later. She asked about the basement.', happiness:75, room:6, request:'Full access to the guest registry going back ten years', reqReward:20, stayDays:3 },
+  { name:'Dr. Malcolm Greer', tag:'sensitive', tagLabel:'Sensitive', desc:'Child psychologist with an open and curious face. Has been spending an unusual amount of time talking to the plants in the lobby.', happiness:78, room:8, request:'A quiet room on a floor where the children are staying', reqReward:12, stayDays:2 },
+  { name:'The Beaumont Brothers', tag:'trouble', tagLabel:'Trouble', desc:'Two brothers, mid fifties, here to settle their late mother\'s estate. One speaks. The other writes everything down in a small notebook.', happiness:55, room:13, request:'The hotel records from 1987. They are very specific about the year.', reqReward:18, stayDays:3 },
+  { name:'Miss Haversham', tag:'vip', tagLabel:'VIP', desc:'Checking in alone for a week. Requested the room be kept exactly as it is, clock and all. Staff have been told not to ask questions.', happiness:60, room:4, request:'The clock in Room 4 stopped. She would like it left that way.', reqReward:25, stayDays:7 },
+  { name:'Father Damien Ortiz', tag:null, tagLabel:null, desc:'Catholic priest here for a diocesan meeting. Has been doing what appear to be casual blessing gestures in each corridor he walks through. Just in case.', happiness:80, room:5, request:'A quiet room as far from Room 7 as possible', reqReward:10, stayDays:2 },
+  { name:'Konstantin Volkov', tag:'vip', tagLabel:'VIP', desc:'Russian chess grandmaster in Portland for an invitational. Has been rearranging the lobby chess set in ways that appear to be messages to someone.', happiness:72, room:16, request:'An opponent worthy of his time', reqReward:22, stayDays:4 },
+  { name:'The Nakamura Quartet', tag:null, tagLabel:null, desc:'Four musicians here to rehearse. They stopped the moment they entered and said the acoustics in this building are extraordinary. They have not elaborated.', happiness:82, room:10, request:'Permission to rehearse in the lobby after midnight', reqReward:15, stayDays:3 },
+  { name:'Prudence Merriweather', tag:'trouble', tagLabel:'Trouble', desc:'Retired librarian. Left a strongly worded note about the noise from Room 12 at 3am. There was no one in Room 12.', happiness:50, room:15, request:'An explanation, in writing, about what is in Room 12', reqReward:12, stayDays:2 },
+  { name:'Silas Thorne', tag:null, tagLabel:null, desc:'Antiques dealer passing through Portland. He walked the lobby once and said three things in the hotel are not what they appear to be. He has not said which three.', happiness:68, room:3, request:'Appraisal access to any item on the property older than 1920', reqReward:20, stayDays:2 },
+  { name:'The Okonkwo Wedding Party', tag:'vip', tagLabel:'VIP', desc:'Twelve guests for a weekend wedding. Joyful, loud, and entirely undeterred by the atmosphere. The ghosts, reportedly, have not known what to make of them.', happiness:85, room:18, request:'The ballroom prepared by Saturday evening, no exceptions', reqReward:35, stayDays:3 },
+  { name:'Ingrid Solberg', tag:null, tagLabel:null, desc:'Norwegian archaeologist with a month of leave and nowhere in particular to be. She is keeping a diary. It is already very long.', happiness:74, room:7, request:'Any original structural documents or building history you can find', reqReward:14, stayDays:5 },
+];
+
+const startingGhostPool = [
+  { name:'Reginald Forthwick', room:12, era:'1920s', interactVerb:'Set a Table', desc:'Former head waiter. Died mid service in 1924 correcting a table setting. Still does it.', mood:70, want:'A properly set formal dinner table', backstory:'Reginald gave forty years to The Bellmore\'s dining room and died doing what he loved: telling people they were wrong. He rearranges place settings nightly, polishes silver that does not need it, and occasionally straightens guests\' ties without being asked. He has standards.', sootheLine:['The silver on the sideboard shifts, rearranged and then rearranged once more. You take it as acknowledgment.','A dining chair slides out an inch, then back. Reginald\'s version of a nod.','The smell of shoe polish, briefly. Then nothing.'], ignoreLine:['Nothing happens. Reginald, apparently, has decided you are beneath correction tonight.','A fork slides off a table somewhere above you. Make of that what you will.','The dining room is very cold for about four minutes. Then it is not.'] },
+  { name:'Agnes Bleecker', room:7, era:'1940s', interactVerb:'Leave a Note', desc:'Checked in on her honeymoon in 1943. Her husband never arrived. She has been waiting ever since, growing increasingly critical of the décor.', mood:45, want:'Someone to genuinely acknowledge her', backstory:'Agnes Bleecker booked Room 7 the week of her engagement. She arrived alone and told the desk clerk her husband would be joining her shortly. That was over eighty years ago. She never unpacked. She never left. She has extensive thoughts about the 1987 renovation and none of them are positive.', sootheLine:['The pipes go quiet. Then, very faintly, the smell of lavender perfume.','The curtain in Room 7 moves. No wind. You feel quite clearly that you are being watched, and found acceptable.','You hear a woman humming something old. It stops when you listen harder.'], ignoreLine:['The pipes start. Not loudly. Just enough.','Room 7 goes cold. It will warm again by morning, probably.','You feel eyes on your back the entire length of Floor 1. You do not turn around.'] },
+  { name:'Captain Harlan Voss', room:3, era:'1910s', interactVerb:'Review the Linens', desc:'Former sea captain turned landlocked hotelier. Died arguing with a supplier about linens in 1917. The argument was never resolved.', mood:55, want:'Someone to settle the linen dispute once and for all', backstory:'Harlan Voss spent thirty years at sea, retired to Portland, and promptly opened a hotel because he missed telling people what to do. He ran The Bellmore with military precision until a heated argument with his linen supplier gave him a fatal stroke. He has been furious ever since. The linen closet on Floor 3 is his domain.', sootheLine:['The linen closet door swings open on its own. Inside, every sheet is folded with naval precision.','A cold draft in the corridor smells faintly of salt water. You are nowhere near the ocean.','You hear what might be a ship\'s bell, once, very far away.'], ignoreLine:['The linen closet jams. It will need to be forced open tomorrow.','A window on Floor 3 opens by itself. It is cold outside.','Nothing happens. The Captain is either appeased or planning something.'] },
+  { name:'Miriam Dusk', room:9, era:'1960s', interactVerb:'Listen', desc:'Jazz singer who performed in the hotel lounge every Friday for eleven years. Still shows up on Fridays.', mood:75, want:'Someone to listen to her perform', backstory:'Miriam Dusk was the best thing about The Bellmore in the 1960s and everyone knew it. She performed every Friday in the lounge and stayed in Room 9 through the weekend. In 1968 she did not drive back from a Friday show. She has not missed a Friday since. Guests occasionally report hearing music from the empty lounge late at night.', sootheLine:['From somewhere in the building, faint and brief, you hear jazz. A single phrase. Then nothing.','The lounge piano plays three notes by itself, then stops. They were the right three notes.','A glass on the bar slides a few inches, as if making room for someone.'], ignoreLine:['The lounge piano plays something slightly off key. Once. Just once.','You find a cocktail napkin with what looks like a setlist written on it. The handwriting is old.','Nothing. Miriam is a professional. She has performed for inattentive audiences before.'] },
+];
+
+const eventPool = [
+  { id:'e1', title:'The 3am Incident', body:'Agnes is rattling the pipes again. Room 8 has called down three times. Mr. Dowd in Room 5 is composing a Yelp review in real time. You can hear him dictating into his phone.', choices:[
+    { text:'Go to Room 7 and speak to Agnes directly', hint:'Risky for a bellhop but direct', res:'You stand outside Room 7 and say quietly: "Mrs. Bleecker, I hear you." The pipes stop. A long pause. Then the faint smell of lavender. The guests settle.', fx:{rep:6,tips:4,gm:['Agnes Bleecker',15],xp:2} },
+    { text:'Call maintenance and tell guests it is a pressure valve', hint:'Safe lie. Solves nothing.', res:'Maintenance finds nothing. The explanation lands poorly. The pipes restart at 4am. Mr. Dowd\'s review sharpens considerably.', fx:{rep:-4,xp:0} },
+    { text:'Send complimentary bourbon to the rooms that complained', hint:'Costs money, buys goodwill', res:'The Pemberton Sisters accept with suspicious enthusiasm. Room 5 softens. The pipes keep banging but the bourbon helps everyone decide they do not care.', fx:{rep:6,tips:-12,xp:1} },
+  ]},
+  { id:'e2', title:'Professor Weir Has Evidence', body:'"Off the record," he says, recorder clearly running, "your staff has made contact with the entity in Room 7, yes?" He is very excited. He is also blocking the elevator.', choices:[
+    { text:'Deny everything professionally', hint:'Standard answer. Clean hands.', res:'"The Bellmore takes all guest experiences seriously." You deliver it perfectly blank. The Professor writes something in his notebook regardless.', fx:{rep:0,xp:0} },
+    { text:'Quietly confirm: yes, she is real', hint:'He will be thrilled. It will spread online.', res:'He practically vibrates. Tips you generously on the spot. By morning it is on three paranormal forums and a subreddit with 4,000 upvotes.', fx:{rep:-5,tips:14,gm:['Agnes Bleecker',8],xp:1} },
+    { text:'Describe Agnes in vivid, accurate detail', hint:'Either brilliant or catastrophic', res:'You describe the dress, the lavender, the year 1943. The Professor weeps openly. A guest who was eavesdropping begins to applaud. Somehow this is good for business.', fx:{rep:5,tips:8,gm:['Agnes Bleecker',10],xp:2} },
+  ]},
+  { id:'e3', title:'Reginald and Room Service', body:'The Caldwells ordered room service. The tray arrived perfectly rearranged. Every item repositioned, salad fork corrected. Mrs. Caldwell called down. Her voice suggested she was not sure whether to tip or run.', choices:[
+    { text:'Explain it as personalized place setting service', hint:'Bold claim. Might land.', res:'"The attention to detail!" Mrs. Caldwell tells her husband. He cannot hear her. She gives it five stars anyway.', fx:{rep:6,tips:10,xp:1} },
+    { text:'Apologize and comp their dessert', hint:'Safe. Costs something.', res:'They accept graciously. Reginald rearranges the apology dessert plate thirty seconds after you set it down.', fx:{rep:3,tips:-8,xp:0} },
+    { text:'Ask Reginald to please stop', hint:'You will be talking to an empty dining room', res:'You whisper to the empty dining room. The salt cellar slides three inches to the left. You take that as a "no."', fx:{gm:['Reginald Forthwick',-8],xp:1} },
+  ]},
+  { id:'e4', title:'Derek is Live', body:'Derek Flint is livestreaming from the hallway outside Room 7. Four thousand viewers. Agnes appears to be performing. The light is flickering on cue.', choices:[
+    { text:'Shut it down, hotel policy', hint:'Clean but Derek will be furious', res:'Derek is incandescent. His audience briefly turns on The Bellmore. Agnes seems annoyed at having her show cut short and slams every door on Floor 1 at 4am.', fx:{rep:-7,gm:['Agnes Bleecker',-12],xp:0} },
+    { text:'Let it run, this is free marketing', hint:'Agnes may not appreciate being a show', res:'Video goes semi viral. Bookings spike. Agnes however is furious at being treated as entertainment and doubles the pipe noise.', fx:{rep:11,gm:['Agnes Bleecker',-15],xp:1} },
+    { text:'Negotiate a cut of his merch revenue', hint:'Way above your pay grade', res:'Derek pauses, considers, and agrees. Agnes watches the entire negotiation and seems impressed. The pipes quiet down. You have inexplicably earned $18 from ghost merchandise.', fx:{rep:4,tips:18,gm:['Agnes Bleecker',5],xp:3} },
+  ]},
+  { id:'e5', title:'Something in Room 12', body:'Housekeeping found Room 12 rearranged overnight. Every piece of furniture facing the window. A playing card, seven of hearts, centered on the bed. Nobody was booked in Room 12.', choices:[
+    { text:'Investigate it yourself', hint:'A bellhop going off script', res:'You sit in the room for fifteen minutes. Nothing happens. Then the wardrobe opens slowly. Inside: another seven of hearts. You close it, back out carefully, and do not run.', fx:{xp:2,rep:0} },
+    { text:'Lock the room and say nothing', hint:'Safest for now', res:'"Under renovation," you tell anyone who asks. Close enough.', fx:{xp:0,rep:0} },
+    { text:'Report it to management immediately', hint:'Correct protocol', res:'Management nods seriously and says they will look into it. The playing cards keep appearing. You have covered yourself, at least.', fx:{rep:3,xp:1} },
+  ]},
+  { id:'e6', title:'Beatrice Moss Asks The Question', body:'"Off the record," she says, pen ready, "is this place actually haunted?" She has 200,000 monthly readers. This is the question.', choices:[
+    { text:'Deny it entirely', hint:'Safe answer. Forgettable article.', res:'"Slightly disappointing hotel, excellent towels." Beatrice Moss, Pacific Living. Could be worse.', fx:{rep:2,xp:0} },
+    { text:'Tell her everything', hint:'Could be extraordinary or disastrous', res:'"The Most Haunted Hotel You Would Actually Want to Stay In." Bookings triple. Agnes and Reginald are mentioned by name. The mood in Room 7 is, for the first time in decades, lighter.', fx:{rep:14,tips:10,gm:['Agnes Bleecker',12],gm2:['Reginald Forthwick',8],xp:2} },
+    { text:'Say only: some guests experience things', hint:'Intriguing but not alarming', res:'Beatrice writes something tantalizing and vague. Enough to intrigue, not enough to frighten. The perfect article.', fx:{rep:6,tips:5,xp:1} },
+  ]},
+  { id:'e7', title:'The Kowalski Kid', body:'The youngest Kowalski, eight years old, has been sitting in the lobby for an hour having a full conversation with empty air. Her parents are pretending this is not happening. Other guests are not pretending.', choices:[
+    { text:'Gently bring the child back upstairs', hint:'Practical. Breaks up the scene.', res:'She goes willingly but tells you the lady says "thank you for the lavender." You did not put out any lavender.', fx:{rep:3,gm:['Agnes Bleecker',10],xp:1} },
+    { text:'Pretend you are not seeing any of this', hint:'Easiest option', res:'Two guests check out early citing an unsettling atmosphere. The Pembertons photograph everything and post it. Views: 3,200.', fx:{rep:-4,xp:0} },
+    { text:'Sit down near the child and wait', hint:'Unknown outcome. Significant nerve.', res:'Nothing visible happens. But the lobby temperature drops five degrees and the grandfather clock, broken since 1988, begins to tick again.', fx:{rep:2,gm:['Agnes Bleecker',20],xp:3} },
+  ]},
+  { id:'e8', title:'The Health Inspector', body:'A health inspector arrived unannounced, which is entirely their brand. She is heading for the kitchen. The kitchen where Reginald rearranges everything every night.', choices:[
+    { text:'Give a gracious tour and hope for the best', hint:'Transparent and risky', res:'She finds the kitchen impeccably organized. Every utensil in its correct place. She seems confused but impressed. Reginald, apparently, maintains high standards.', fx:{rep:8,xp:1} },
+    { text:'Stall her in the lobby for fifteen minutes', hint:'Buys time to prepare', res:'You stall brilliantly. The kitchen is presentable when she arrives. Clean report. Management thanks you later.', fx:{rep:5,tips:5,xp:1} },
+    { text:'Let her go wherever she likes', hint:'Could go either way', res:'She finds a playing card, seven of hearts, on the prep counter. She photographs it, marks it as a hygiene concern, and leaves with a deeply puzzled expression.', fx:{rep:-6,xp:0} },
+  ]},
+  { id:'e9', title:'The Wheel', body:'The pottery wheel in the lobby art display — the one that has been a static decorative piece since 1994 — is spinning. Slowly. With wet clay on it that was not there before. A couple on their honeymoon is standing in front of it, completely still, holding hands. Nobody has touched the wheel.', choices:[
+    { text:'Dim the lobby lights and say nothing', hint:'Let the moment happen', res:'You dim the lights and step back. The clay rises slowly on the wheel — no hands visible, but shaped deliberately, unmistakably. The couple stands watching for eleven minutes. They tip you $80 at checkout and request the same room next anniversary.', fx:{rep:10,tips:80,xp:3} },
+    { text:'Call it a malfunction and apologize', hint:'Safest story. Ruins it completely.', res:'"Hydraulic display feature." You say it with total conviction. The wheel slows and stops. The clay collapses. The couple looks deeply disappointed. You have broken something that was not yours to break.', fx:{rep:-3,xp:0} },
+    { text:'Ask the couple if they would like to sit down at it', hint:'Some things should be experienced properly', res:'They sit. The clay moves beneath their hands in a way that cannot be explained. Nobody speaks. When it is over the woman is crying. The man says quietly: "I felt someone else\'s hands." You go back to the desk and do not speak of it.', fx:{rep:8,tips:60,xp:4} },
+  ]},
+  { id:'e10', title:'The Water Mark', body:'There is a waterline on the lobby wall. Faint, horizontal, about four feet up — the kind left by a flood. No flood has touched this building. The line was not there yesterday. A guest who grew up in Portland has gone very quiet looking at it.', choices:[
+    { text:'Tell her what you know about the 1894 flood', hint:'The Willamette reached 33.5 feet downtown that year. 250 blocks submerged.', res:'She listens carefully. Then she says: "My great-grandmother lost everything on Front Street that summer." She stands at the mark for a long time. She leaves a large tip and a handwritten note: "Thank you for knowing."', fx:{rep:7,tips:45,xp:3} },
+    { text:'Paint over it before other guests see', hint:'Clean and fast', res:'You paint over it before breakfast. By afternoon it has reappeared, exactly as before, at exactly the same height. You do not paint over it again.', fx:{rep:0,xp:1} },
+    { text:'Photograph it and say nothing', hint:'Document first', res:'The photograph shows only a clean wall. The line is visible in the room. This is useful information, somehow.', fx:{rep:2,xp:2} },
+  ]},
+  { id:'e11', title:'The Man Who Came From Vanport', body:'A guest found an old photograph tucked behind the mirror in Room 20. Black and white. A man in work clothes standing in front of a row of identical houses, smiling. On the back, in careful handwriting: "Vanport, May 1948." The guest wants to know who he is.', choices:[
+    { text:'Tell them the history of Vanport', hint:'Built for Kaiser Shipyard workers in WWII. On Memorial Day 1948, the dike broke at 4:17pm. The city of 18,000 was underwater by nightfall.', res:'The guest listens to all of it. They ask if any residents ended up at The Bellmore. You say you think some of them must have. There is a long silence. Later that night, the smell of fresh timber and river water fills Room 20 briefly, and then is gone.', fx:{rep:6,tips:20,xp:3} },
+    { text:'Return the photograph to the front desk lost and found', hint:'Protocol. Nothing more.', res:'The photograph stays in the lost and found. Nobody claims it. By next week it will be in the drawer with the unclaimed keys. This feels like the wrong ending.', fx:{rep:1,xp:0} },
+    { text:'Leave the photograph where it was found', hint:'Some things belong where they are', res:'You put it back behind the mirror. That night the light in Room 20 pulses once, warm and brief, like something finally acknowledged. In the morning the photograph is gone.', fx:{rep:4,xp:2,tips:10} },
+  ]},
+  { id:'e12', title:'What Came Up From Below', body:'During a plumbing repair, workers broke through to a brick-lined passage beneath the hotel basement. Old construction — mid 1800s Portland, waterfront era. One worker refuses to go back down. He says there is a cell carved into the wall with iron rings still bolted into the stone. He says something is still in there.', choices:[
+    { text:'Seal it immediately, no documentation', hint:'What guests do not know cannot hurt bookings', res:'The passage is sealed by end of day. Nobody asks questions. That night every door in the building opens simultaneously at 3am and closes again. Management files it as a pressure event.', fx:{rep:0,xp:1} },
+    { text:'Contact a Portland historian before doing anything', hint:'The Shanghai tunnel network beneath Old Town Portland dates to the 1850s. Whether it was used for shanghaiing is disputed — but the tunnels are real.', res:'The historian arrives within the hour. She confirms the passage is genuine 1850s construction and likely connected to the Old Town waterfront network. She writes about it. The Bellmore receives a heritage designation application within a month.', fx:{rep:12,xp:3} },
+    { text:'Go down yourself', hint:'You will regret this or you will not', res:'The passage is cold and smells of river water and something older. The cell is real. The iron rings are worn smooth in a specific way. You come back up and sit quietly at the desk for a while before your shift continues.', fx:{rep:3,xp:4} },
+  ]},
+  { id:'e13', title:'The Columbus Day Storm', body:'October 12. The weather service has issued a severe wind warning. The barometer is dropping in a way that makes the older staff nervous. One of the long-timers says only: "I was here in \'62." In 1962, the Columbus Day Storm hit downtown Portland at 116 miles per hour and killed 38 people across Oregon. The oldest guests are checking the sky.', choices:[
+    { text:'Secure the building and brief all staff', hint:'The right call. Always.', res:'Windows latched, loose items brought in, staff briefed on procedure. The storm arrives hard and fast. The Bellmore holds. Three neighboring businesses lose signage. One guest calls it "the most prepared hotel I have ever sheltered in." Five stars.', fx:{rep:9,xp:2} },
+    { text:'Reassure guests that modern forecasting is much better now', hint:'Partially true', res:'The storm is bad but not catastrophic. Most guests take your word for it. One does not, checks out before the rain starts, and misses the worst of it by exactly twenty minutes.', fx:{rep:3,xp:1} },
+    { text:'Ask the long-timer what 1962 was actually like', hint:'Some history should be heard directly', res:'She tells you about the trees coming down, the power out for days, a silence afterward that felt wrong. "The building groaned," she says. "Like it was deciding." She looks at the ceiling. "It decided to stay." Tonight it holds again.', fx:{rep:5,tips:15,xp:2} },
+  ]},
+];
+
+const taskPool = [
+  { t:'Deliver the morning papers to occupied rooms on Floor 1', xp:1, needsGuests:true },
+  { t:'The elevator is stuck between floors 1 and 2 again', xp:2 },
+  { t:'Replace lobby flowers. Agnes knocked them over again.', xp:1 },
+  { t:'Extra towels requested from the occupied rooms on Floor 1', xp:1, needsGuests:true },
+  { t:'An untagged suitcase was left in the stairwell. Handle it.', xp:1 },
+  { t:'The dining room fireplace will not light. Reginald is displeased.', xp:2 },
+  { t:'Arrange an early taxi for a guest checking out tomorrow', xp:1, needsGuests:true },
+  { t:'Confirm that Room 12 is actually empty. Management insists.', xp:2 },
+  { t:'Replace the hallway bulb outside Room 7. Out again.', xp:1 },
+  { t:'Retrieve and log breakfast trays from the occupied floors', xp:1, needsGuests:true },
+  { t:'Wind the lobby grandfather clock. It has stopped.', xp:1 },
+  { t:'File a cold spot incident report. Staff reported the stairwell.', xp:1 },
+  { t:'Polish the brass fixtures in the lobby. The state of them.', xp:1 },
+  { t:'The boiler pressure is reading high. Investigate before it becomes a situation.', xp:2 },
+  { t:'Restock the complimentary items on Floor 2. Someone took everything.', xp:1 },
+  { t:'The lobby piano has a stuck key. Find someone to look at it.', xp:1 },
+  { t:'A guest left a complaint note at the front desk. Acknowledge and file it.', xp:1, needsGuests:true },
+  { t:'The garden entrance gate is not latching. Fix it before dark.', xp:1 },
+  { t:'Walk the property. Check each floor and report anything unusual to the front desk.', xp:1 },
+  { t:'The ice machine on Floor 2 is making a noise. Investigate before guests notice.', xp:2 },
+  { t:'Something was rearranged in the dining room overnight. Set it right before breakfast service.', xp:1 },
+  { t:'A cold draft is coming from the stairwell on Floor 3. Find the source and log it.', xp:2 },
+  { t:'Three lobby chairs have been moved into a circle facing the fireplace. No guests did this.', xp:2 },
+  { t:'The kitchen inventory needs logging before the morning delivery arrives.', xp:1 },
+  { t:'The front entrance mat is missing. Find it before the morning shift notices.', xp:1 },
+  { t:'A window on Floor 2 has been found open. Close it and check the others.', xp:1 },
+  { t:'The reading room books have been pulled from their shelves and stacked by the chair. Re-shelve them.', xp:1 },
+  { t:'Maintenance found a door locked from the inside with no one in the room. Handle it.', xp:2 },
+  { t:'The bar inventory has a discrepancy. Two bottles of bourbon unaccounted for.', xp:2 },
+  { t:'Review the overnight incident log and initial anything unusual.', xp:1 },
+  { t:'Review the quarterly incident reports and sign off as owner.', xp:3, needsOwner:true },
+  { t:'The linen supplier has sent another letter. As owner, you can finally settle it.', xp:4, needsOwner:true },
+  { t:'A journalist wants a statement about the hotel\'s history. As owner, this is your call.', xp:3, needsOwner:true },
+  { t:'Staff payroll needs your signature. Welcome to ownership.', xp:2, needsOwner:true },
+  { t:'A Portland preservation society wants to landmark the building. Respond as owner.', xp:3, needsOwner:true },
+];
+
+const ghostUnlockPool = [
+  {
+    name:'Edmund Pryce', room:14, era:'1930s', unlockDay:5, interactVerb:'File a Report',
+    desc:'House detective during Prohibition. Knew where every secret was kept. Died knowing too many of them.',
+    mood:40, want:'Acknowledgment that he protected this hotel',
+    backstory:'Edmund Pryce kept The Bellmore\'s secrets during the roughest decade of its history. Bootleggers, politicians, affairs — he handled all of it quietly and without ever writing anything down. He died in 1934, officially of a heart attack, in Room 14. He is territorial, watchful, and deeply suspicious of guests he does not recognize.',
+    sootheLine:['You feel very clearly that you are being observed from the corner of the hallway. Nothing is there.','A door that was locked is now unlocked. A door that was open is now closed.','The air in Room 14 shifts. Not cold exactly. More like attention.'],
+    ignoreLine:['You find a note on the front desk that was not there before. It says only: "I am watching."','The master key goes missing for twenty minutes. It turns up exactly where you left it.','Nothing happens. Edmund has seen worse than you.'],
+  },
+  {
+    name:'Nora Fenn', room:2, era:'1950s', unlockDay:9, interactVerb:'Do an Inspection',
+    desc:'Head housekeeper for twenty two years. Retired in 1959, came back three days later, and never actually left.',
+    mood:80, want:'The hotel to meet her standards',
+    backstory:'Nora Fenn retired after twenty two years as head housekeeper, gave a tearful speech, accepted her gift, and was back inspecting rooms seventy two hours later. She died in 1972 still technically on staff. She has opinions about hospital corners, dust on baseboards, and the way the current staff folds towels. Her standards have not lowered in death.',
+    sootheLine:['You find a room that was slightly untidy now perfectly arranged. Nobody was in there.','The smell of lavender polish, briefly, in a hallway that was just cleaned.','A towel that was unevenly hung is now perfectly even. You did not touch it.'],
+    ignoreLine:['A basin faucet on Floor 2 runs cold for several minutes on its own.','You find a pillow on the floor in an empty room. It was not there this morning.','Nothing happens. Nora disapproves but she is a professional.'],
+  },
+  {
+    name:'Captain Harlan Voss', room:3, era:'1910s', unlockDay:13, interactVerb:'Review the Linens',
+    desc:'Former sea captain turned landlocked hotelier. Died arguing with a supplier about linens in 1917. The argument was never resolved.',
+    mood:55, want:'Someone to settle the linen dispute once and for all',
+    backstory:'Harlan Voss spent thirty years at sea, retired to Portland, and promptly opened a hotel because he missed telling people what to do. He ran The Bellmore with military precision until a heated argument with his linen supplier gave him a fatal stroke. He has been furious ever since. The linen closet on Floor 3 is his domain.',
+    sootheLine:['The linen closet door swings open on its own. Inside, every sheet is folded with naval precision.','A cold draft in the corridor smells faintly of salt water. You are nowhere near the ocean.','You hear what might be a ship\'s bell, once, very far away.'],
+    ignoreLine:['The linen closet jams. It will need to be forced open in the morning.','A window on Floor 3 opens by itself. It is cold outside.','Nothing happens. The Captain is either appeased or planning something.'],
+  },
+  {
+    name:'Miriam Dusk', room:9, era:'1960s', unlockDay:18, interactVerb:'Listen',
+    desc:'Jazz singer who performed in the hotel lounge every Friday for eleven years. Still shows up on Fridays.',
+    mood:75, want:'Someone to listen to her perform',
+    backstory:'Miriam Dusk was the best thing about The Bellmore in the 1960s and everyone knew it. She performed every Friday in the lounge and stayed in Room 9 through the weekend. In 1968 she did not drive back. She has not missed a Friday since. Guests occasionally report hearing music from the empty lounge late at night.',
+    sootheLine:['From somewhere in the building, faint and brief, you hear jazz. A single phrase. Then nothing.','The lounge piano plays three notes by itself, then stops. They were the right three notes.','A glass on the bar slides a few inches, as if making room for someone.'],
+    ignoreLine:['The lounge piano plays something slightly off key. Once. Just once.','You find a cocktail napkin with what looks like a setlist written on it. The handwriting is old.','Nothing. Miriam is a professional. She has performed for inattentive audiences before.'],
+  },
+  {
+    name:'The Boy on Floor 2', room:6, era:'Unknown', unlockDay:24, interactVerb:'Follow the Sound',
+    desc:'Nobody knows his name. He is heard before he is seen — a rubber ball bouncing at odd hours, then silence. He does not know he should not be here.',
+    mood:50, want:'Someone to acknowledge him without running away',
+    backstory:'Staff call him the boy on Floor 2. He has been here longer than anyone can document. He appears at the end of corridors and is gone before you look directly at him. He seems confused by the modern guests — their phones, their clothes, their startled reactions. One previous employee left a note in the staff file: "He just wants to play. He does not understand what he is."',
+    sootheLine:['The bouncing stops. Then, faintly, what sounds like a child laughing. Far away.','A rubber ball, old and faded, sits in the middle of the corridor. It was not there a moment ago.','The elevator door opens on Floor 2, empty. It waits longer than it should before closing again.'],
+    ignoreLine:['The ball bounces at 3am. It bounces at 3:15. It bounces at 3:30.','Something small and fast moves at the edge of your vision in the corridor.','Silence. Which somehow feels worse than the bouncing.'],
+  },
+  {
+    name:'Dorothea Vane', room:19, era:'1880s', unlockDay:30, interactVerb:'Sit With Her',
+    desc:'The oldest presence in The Bellmore, here before the building had its current name. She sits in the reading room, always in the same chair, always watching the door.',
+    mood:65, want:'To be remembered',
+    backstory:'Dorothea Vane was the wife of the original builder, who died before the hotel opened. She never saw it finished. She has been in the reading room since 1887, watching guests arrive through a door she once stood at herself. She does not rearrange things or knock items over. She simply sits and watches, which in its own way is worse.',
+    sootheLine:['The reading room is warm when you enter, which it should not be at this hour. The chair by the window holds a slight impression.','You find a pressed flower on the reading room table. Perfectly preserved. There are no flowers in the building.','For a moment the hotel smells like 1887 — wood varnish, coal smoke, something floral. Then it is gone.'],
+    ignoreLine:['The reading room light flickers once.','You feel, strongly, that you have disappointed someone. The feeling passes in the corridor.','Nothing changes. Dorothea is patient. She has had a long time to become patient.'],
+  },
+  {
+    name:'Cole Parish', room:16, era:'1990s', unlockDay:7, interactVerb:'Walk the Hallway With Him',
+    desc:'A quiet boy who wanders the corridors at night. He greets guests politely. He asks thoughtful questions. He does not understand why some of them scream.',
+    mood:60, want:'Someone who is not afraid of him',
+    backstory:'Cole Parish drowned in the hotel pool in 1993. He was eight years old. He does not know this. He believes he is a guest, same as the others, and cannot understand why the lights flicker when he enters a room or why adults sometimes back against the wall when he says hello. He sees the other permanent residents quite clearly. He is the only one who does. They find this unsettling.',
+    sootheLine:['A small handprint appears on the fogged bathroom mirror of an empty room. It fades slowly.','The corridor on Floor 4 smells briefly of chlorine. There is no pool in The Bellmore.','You hear a child\'s voice say "good night" from a room you know is empty. The door is closed. You do not open it.'],
+    ignoreLine:['Every light on Floor 4 dims simultaneously for about four seconds.','You find a small wet footprint on the carpet. Just one. You look both ways down the hall.','Cole appears briefly at the end of the corridor and then is not there. He looked lonely.'],
+  },
+  {
+    name:'Silas Colt', room:8, era:'1880s', unlockDay:11, interactVerb:'Hear Him Out',
+    desc:'Drifted into Portland in 1882, checked in under a false name, and never checked out. His spurs leave no marks. His poker face is still perfect.',
+    mood:50, want:'A fair game and someone to call him by his real name',
+    backstory:'Nobody knew his real name when he was alive and the name he used is on a wanted poster in three territories. He came to The Bellmore to disappear, and in a manner of speaking it worked. He died in his room during a card game under disputed circumstances. He still plays most nights. The cards are always there in the morning, spread on the table in Room 8, mid hand. Nobody has ever seen who he plays against.',
+    sootheLine:['A single playing card is found face down in the corridor. You flip it. Ace of spades. You put it back.','The window in Room 8 swings open, briefly, then closes. Outside it is perfectly still.','You smell tobacco smoke in the stairwell, old and dark. Nobody has smoked in this building in decades.'],
+    ignoreLine:['Three doors on Floor 2 slam in quick succession. Not violently. Pointedly.','The lobby card table has been reset overnight, cards mid deal, no players.','Nothing. Silas has been ignored by better people than you.'],
+  },
+  {
+    name:'Franklin Beaumont', room:20, era:'1940s', unlockDay:15, interactVerb:'Pull Up a Chair',
+    desc:'Bebop pianist from New Orleans. Toured the Pacific Northwest in 1947, stopped at The Bellmore for a week, and stayed considerably longer.',
+    mood:70, want:'The piano to be kept in tune',
+    backstory:'Franklin Beaumont was one of the finest bebop pianists the Pacific Northwest ever heard, which is to say almost nobody heard him. He played the hotel lounge six nights a week and practiced the seventh. He died in 1951 of pneumonia, which he had been ignoring for three months because the piano in the lounge had finally been tuned correctly and he did not want to stop. He is still there most evenings. The piano tends to stay in tune now.',
+    sootheLine:['The lobby piano plays something late at night. Not a full piece. Just a phrase, searching for where it wants to go.','You find a penciled chord chart on the edge of the piano bench. The handwriting is deliberate and old.','The lounge smells of cigarettes and river air for a few minutes around midnight. Then just the hotel again.'],
+    ignoreLine:['The piano plays a single discordant chord. Loud. At 2am.','Franklin\'s mood is in his playing. Tonight his playing is not kind.','Silence from the lounge. This is worse, somehow, than the noise.'],
+  },
+  {
+    name:'Vivienne LaRoche', room:13, era:'1970s', unlockDay:21, interactVerb:'Compliment the Room',
+    desc:'B-movie actress from the golden age of drive-in horror. Checked in for a weekend shoot in 1974 and refused to leave after the studio pulled her contract.',
+    mood:65, want:'To be recognized. Still.',
+    backstory:'Vivienne LaRoche starred in eleven horror films between 1968 and 1973, none of which were particularly good and all of which she was extraordinary in. She checked into The Bellmore during what was supposed to be a comeback project. The project dissolved. She did not. She died in Room 13 in 1981, still believing the right role was coming. Guests occasionally find old film posters in the corridor outside her room that were not there before.',
+    sootheLine:['An old film poster appears briefly on the wall of the corridor. A woman in white. Then gone.','The mirror in Room 13 fogs from the inside, briefly, and something like a signature appears in the condensation.','The hallway outside Room 13 smells of expensive perfume for a moment. The brand has not been manufactured since 1978.'],
+    ignoreLine:['Room 13 goes cold. Dramatically cold. She has always understood theatrical effect.','You find a one-star review on the front desk notepad for a film that came out in 1971.','Nothing. Vivienne has been ignored by studio executives. You are a minor inconvenience by comparison.'],
+  },
+  {
+    name:'Desmond Flux', room:11, era:'1970s', unlockDay:26, interactVerb:'Turn Up the Music',
+    desc:'Disco DJ. Died in 1978 mid set at the hotel\'s New Year\'s Eve party when the lighting rig came down. He is still playing.',
+    mood:80, want:'Someone to dance',
+    backstory:'Desmond Flux ran the most sought-after New Year\'s party in Portland for three consecutive years. The Bellmore\'s ballroom was packed the night he died. The lighting rig failed at 11:58pm. He was found still holding the record he was about to play. The ballroom has had a subtle pulse in its walls ever since, like a bass line that never resolves, and occasionally, during particularly quiet nights, staff report the distinct smell of dry ice and sweat.',
+    sootheLine:['The ballroom lights flicker in a pattern. Not random. Rhythmic.','You hear, very briefly, something with a deep bass line from the direction of the ballroom. Then the building settles.','The temperature in the ballroom is inexplicably comfortable tonight. The rest of the hotel is cold.'],
+    ignoreLine:['A disco ball that is definitely not installed in this hotel casts a single rotating point of light down the corridor.','The jukebox in the lobby plays one song, unprompted, at full volume, then stops.','Desmond is not offended. He is disappointed. There is a difference and you can feel it.'],
+  },
+  {
+    name:'Jack Morrow', room:5, era:'1950s', unlockDay:35, interactVerb:'Read the Manifesto',
+    desc:'Beat poet and self-described philosopher. Moved into The Bellmore in 1956 with a typewriter, three notebooks, and very strong opinions about jazz, capitalism, and the nature of the road.',
+    mood:60, want:'Someone willing to argue with him',
+    backstory:'Jack Morrow arrived at The Bellmore with the intention of staying a week and writing something that would change the way Americans thought about freedom. He stayed eleven years. He died in Room 5 in 1967 mid-sentence, which he would have considered appropriate. His typewriter is still there. Occasionally it types by itself. The pages that come out are dense, contradictory, and occasionally brilliant.',
+    sootheLine:['The typewriter in Room 5 runs for a few minutes. You find a page in the hall. The argument is mostly coherent.','The smell of coffee and cigarettes in the stairwell, strong and particular. Someone was thinking hard here.','A window on Floor 1 is found open despite the cold. Someone needed air. Someone still does.'],
+    ignoreLine:['The typewriter runs at 3am. Loudly. For forty minutes.','A note under your office door: "YOU ARE NOT PAYING ATTENTION." Unsigned.','Nothing. Jack has been dismissed by better critics. You register as noise.'],
+  },
+  {
+    name:'Lady Ashworth', room:18, era:'1890s', unlockDay:22, interactVerb:'Observe Propriety',
+    desc:'Victorian aristocrat who arrived from London in 1892 for reasons she never disclosed to anyone, including the police who later asked.',
+    mood:55, want:'Standards to be maintained',
+    backstory:'Lady Constance Ashworth arrived at The Bellmore with six trunks, a lady\'s maid who vanished after the first week, and an air of absolute unquestionable authority. She died in 1898 under circumstances that remain technically unresolved. She considers the entire twentieth century to have been an unfortunate experiment and has strong feelings about the dress code, the menu, the way the staff walks, and the general moral decline of the establishment.',
+    sootheLine:['Every door on Floor 4 is found closed and latched in the morning, which is not how they were left.','The formal dining room chairs have been pushed back exactly two inches from the table. Someone expects to be seated.','A single white glove is found on the front desk. It was not there at closing. It is spotless.'],
+    ignoreLine:['Something that sounds like a silver dinner bell rings once from Floor 4. You are not imagining it.','The lobby temperature drops noticeably for about three minutes. Lady Ashworth is expressing displeasure through the only channel available to her.','Nothing outward. But the air on Floor 4 has a quality to it now that it did not have before.'],
+  },
+  {
+    name:'Professor Aldous Finch', room:17, era:'1900s', unlockDay:28, interactVerb:'Consult the Records',
+    desc:'Edwardian naturalist who checked in while cataloguing Pacific Northwest flora and fauna. He did not expect to add himself to the list.',
+    mood:72, want:'His field notes to be found and preserved',
+    backstory:'Professor Aldous Finch of the Royal Geographic Society arrived in 1906 with specimen cases and a methodical mind. He died of a fever in Room 17 in 1907 with his Portland field notes incomplete. He is less interested in being acknowledged as a ghost than in ensuring someone eventually finds and reads his notebooks, which are still in the room. Nobody has found them. This has been going on for over a century.',
+    sootheLine:['A small dried wildflower appears on the windowsill of Room 17. It is native to the region and correctly pressed.','You find a page of handwritten observations in the stairwell. The handwriting is Victorian and very neat. It is describing the building\'s current occupants.','The lamp in Room 17 burns brighter for a few minutes around dusk, as though something is reading by it.'],
+    ignoreLine:['The door to Room 17 sticks. Not jammed. Reluctant.','You find the word "NOTE" scratched very finely into the dust on the Room 17 windowsill.','Nothing aggressive. Professor Finch is a patient man. He simply needs you to look in the right drawer.'],
+  },
+  {
+    name:'Isaiah Crane', room:4, era:'1890s', unlockDay:16, interactVerb:'Watch the River',
+    desc:'Dockworker from the 1894 flood. The Willamette reached 33.5 feet that June, submerging 250 city blocks. Isaiah was working the docks when the water came.',
+    mood:45, want:'Someone to know what the water took',
+    backstory:'The Great Flood of 1894 was the worst in Portland\'s recorded history. The Willamette reached 33.5 feet — its highest mark ever — and swallowed 250 downtown blocks whole. Two drawbridges stuck open, splitting the city for days. Isaiah Crane was a dockworker on the Willamette waterfront when the river came over the banks on June 6th. He was thirty-one years old. He has been in Room 4 ever since, and on certain mornings the carpet near the window is inexplicably damp.',
+    sootheLine:['The floor near the window in Room 4 is damp this morning. No pipe leak. No spill. Just damp.','You smell river water in the corridor outside Room 4. The Willamette is two miles from here.','The window in Room 4 fogs from the bottom up, as if water is rising against it. Then it clears.'],
+    ignoreLine:['Room 4 is cold in a way that has nothing to do with the temperature.','A wet handprint appears briefly on the window of Room 4, facing inward. It fades in under a minute.','Nothing. Isaiah Crane has had decades to get used to being overlooked.'],
+  },
+  {
+    name:'Calvin Dubois', room:20, era:'1940s', unlockDay:20, interactVerb:'Sit With Him',
+    desc:'Shipyard worker from Vanport. Came from Louisiana on a wartime labor train in 1943. Built Liberty Ships for Kaiser. Was home on Memorial Day 1948 when the dike broke.',
+    mood:55, want:'Someone to know that Vanport was real',
+    backstory:'Vanport was Oregon\'s second-largest city — a wartime housing project built in months for Kaiser Shipyard workers, home to 40,000 at its peak including thousands of African Americans who had come from the South on special labor trains. On Memorial Day 1948, the Housing Authority of Portland distributed leaflets that morning: "Dikes are safe at present. You will be warned if necessary." At 4:17pm the railroad dike broke. By nightfall, a city of 18,000 was gone. Calvin Dubois was in his apartment when the water came through the wall. He ended up at The Bellmore because Portland\'s hotels were among the few places required to take in the displaced. He never found permanent housing. He has been in Room 20 ever since. He keeps to himself. He does not make noise. He only asks that you know what happened.',
+    sootheLine:['Room 20 smells briefly of sawdust and river air — the smell of a working shipyard on a wet Oregon morning.','You find a folded piece of paper under the door of Room 20. It reads only: "Vanport, May 1948. We were here."','The light in Room 20 burns steadily all night. You did not leave it on. It is a comfort, somehow.'],
+    ignoreLine:['Room 20 is dark when it should not be. The bulb is fine.','Nothing happens in Room 20. This is its own kind of heaviness.','Calvin is quiet. He has always been quiet. That was never the problem.'],
+  },
+  {
+    name:'Thomas Cray', room:1, era:'1880s', unlockDay:33, interactVerb:'Open the Cellar Door',
+    desc:'Vanished from a waterfront saloon in 1887. Portland earned the name "Forbidden City of the West" in that era — whether the tunnels beneath Old Town were truly used for shanghaiing is still debated by historians. Thomas does not remember. He only knows he woke up somewhere else and could not find his way back.',
+    mood:35, want:'To know what actually happened to him',
+    backstory:'Portland in the 1880s was a rough port city — saloons, crimps, and a waterfront economy built on ships that always needed crews. The tunnels beneath Old Town connected hotel basements to the Willamette docks, used officially for moving cargo out of the rain. Thomas Cray came in from eastern Oregon in the autumn of 1887, stopped at a waterfront tavern, and was never seen again. What happened in the hours between the tavern and wherever he woke up is genuinely unclear — historians have found no evidence the tunnels were systematically used for abduction, but men did vanish, ships did sail short-crewed, and Portland did earn its reputation. Thomas has been in Room 1 since the building was new. He is not angry. He is confused, which is in some ways harder to sit with.',
+    sootheLine:['The door to the cellar stairwell, always locked, is found slightly open. Cold air rises from below.','You hear, once, from the direction of the basement, something that might be a man calling out. Then nothing.','A ship\'s manifest from 1887 is found tucked in the frame of the Room 1 door. The name T. Cray appears on it under "crew, unconfirmed." The ship is the Sarah Lee, outbound for Shanghai.'],
+    ignoreLine:['The lock on the cellar door rattles. Once. Then stops.','Room 1 smells of salt water and sawdust. The nearest river is two miles away.','Thomas does not escalate. He has been waiting long enough to know that patience is the only thing he has left.'],
+  },
+];
+
+function checkGhostUnlocks() {
+  ghostUnlockPool.forEach(ghost => {
+    const alreadyKnown = G.ghosts.find(g=>g.name===ghost.name);
+    if (!alreadyKnown && G.day >= ghost.unlockDay) {
+      G.ghosts.push({...ghost, id:++G.ghostId});
+      log('Something has shifted on Floor '+ Math.ceil(ghost.room/4)+'. A new presence at The Bellmore.','ghost');
+      showResult(
+        'You become aware of something on Floor '+Math.ceil(ghost.room/4)+'.<br><br>The staff will not discuss it. The guests have not noticed yet.<br><br><em>A new permanent resident has made themselves known.</em>',
+        'ghost',
+        [{label:ghost.name+' · Room '+ghost.room}]
+      );
+    }
+  });
+}
+
+// ────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────
+let G = {};
+
+function startGame() {
+  G = {
+    day:1, rep:28, tips:0, rank:0, rankXP:0,
+    rankNames:['Bellhop','Front Desk Clerk','General Manager','Owner'],
+    rankThresh:[35,90,180,9999],
+    guests:[], arrivals:[], ghosts:[], tasks:[], log:[],
+    activeEvent:null, usedEvents:[], usedTasks:[], warningLevel:0, lastRepLoss:'neglect',
+    gId:0, ghostId:0, tId:0,
+    upgrades: upgradeDefs.map(u=>({...u,owned:false})),
+    condIdx:0,
+    shiftHours: SHIFT_HOURS,
+    totalTips: 0,
+    warningLevel: 0,
+    lastRepLoss: 'general negligence',
+  };
+  // Shuffle starting ghosts - pick 2 randomly
+  const shuffledGhosts = [...startingGhostPool].sort(()=>Math.random()-.5);
+  shuffledGhosts.slice(0,2).forEach(g => G.ghosts.push({...g, id:++G.ghostId, interactedToday:false}));
+  // Shuffle event pool order for variety
+  G.shuffledEvents = [...eventPool].sort(()=>Math.random()-.5);
+  queueArrivals(2);
+  // Pick 2 random Day 1 tasks from non-guest-dependent pool
+  const day1Pool = taskPool.filter(t => !t.needsGuests && !t.needsOwner).sort(()=>Math.random()-.5);
+  day1Pool.slice(0,2).forEach(t => { addTask(t.t, t.xp); G.usedTasks.push(t.t); });
+  log('Day 1. You arrive at The Bellmore for your first shift as Bellhop.', 'neutral');
+  log('The lobby smells of old wood, lavender, and something else entirely.', 'ghost');
+  document.getElementById('introScreen').classList.add('hidden');
+  renderAll();
+  // No event day 1 — let the player settle in
+}
+
+function resetGame() {
+  document.getElementById('overScreen').classList.add('hidden');
+  document.getElementById('introScreen').classList.remove('hidden');
+}
+
+// ────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────
+function addTask(t, xp) { G.tasks.push({id:++G.tId, title:t, xp:xp||1, done:false}); }
+
+function log(msg, type='neutral') {
+  G.log.unshift({msg, type, day:G.day});
+  if (G.log.length > 60) G.log.pop();
+}
+
+function owned(id) { return G.upgrades.find(u=>u.id===id)?.owned; }
+function moodState(m) { return m>65?'calm':m>35?'mischievous':'restless'; }
+function moodColor(m) { return m>65?'var(--green-bright)':m>35?'var(--gold)':'var(--red-bright)'; }
+function repToStars(r) { if(r>=88)return 5; if(r>=70)return 4; if(r>=50)return 3; if(r>=35)return 2; return 1; }
+function repBarPct(r) { const t=[0,35,50,70,88,100]; const s=repToStars(r); return Math.round(((r-t[s-1])/(t[s]-t[s-1]))*100); }
+function repBarColor(r) { const s=repToStars(r); return s>=4?'var(--gold)':s===3?'#e67e22':'var(--red-bright)'; }
+
+function tipMult() {
+  // Logarithmic pay scale by rank
+  if (G.rank >= 2) return 10;
+  if (G.rank >= 1) return 3;
+  return 1;
+}
+
+function earn(amount) {
+  const m = tipMult();
+  const total = Math.floor(amount * m);
+  G.tips += total; G.totalTips += total;
+  return total;
+}
+
+function fmt(n) { return '$'+Math.round(n).toLocaleString(); }
+
+function hotelPrice() {
+  const prices = {1:75000, 2:250000, 3:750000, 4:2500000, 5:8000000};
+  return prices[repToStars(G.rep)] || 75000;
+}
+function getSeason(day) { return seasons[Math.floor(((day-1)%120)/30)]; }
+
+function spendHour(n=1) {
+  if (G.shiftHours <= 0) return false;
+  G.shiftHours = Math.max(0, G.shiftHours - n);
+  return true;
+}
+
+function changeRep(d, reason) {
+  if (d < 0 && owned('press')) d = Math.ceil(d * 0.5);
+  let newRep = Math.max(0, Math.min(100, G.rep + d));
+  if (!owned('buyhotel') && newRep > 84) {
+    newRep = 84;
+    if (G.rep < 84) log('The hotel is performing at its ceiling. Something is holding it back.','neutral');
+  }
+  G.rep = newRep;
+  // Track last loss reason for firing message
+  if (d < 0 && reason) G.lastRepLoss = reason;
+  checkWarnings();
+  if (G.rep <= 0) gameOver();
+}
+
+function checkWarnings() {
+  if (owned('buyhotel')) return; // Can't be fired as owner
+  const w = G.warningLevel || 0;
+  if (G.rep <= 10 && w < 3) {
+    G.warningLevel = 3;
+    showResult(
+      'A sealed envelope is on the front desk when you arrive. Inside: a single typed line.<br><br><em>"This is your final notice. One more incident and your employment at The Bellmore is concluded."</em><br><br>Management has signed it. So has someone else. The handwriting on the second signature is very old.',
+      'bad', [{label:'Final Warning',neg:true},{label:'Rep: '+G.rep,neg:true}]
+    );
+    log('FINAL WARNING issued by management.','bad');
+  } else if (G.rep <= 20 && w < 2) {
+    G.warningLevel = 2;
+    showResult(
+      'The General Manager stops you in the lobby. No preamble.<br><br><em>"We have had multiple guest complaints this week. The Bellmore has a reputation to maintain. I am watching your shifts personally now."</em><br><br>They walk away before you can respond.',
+      'bad', [{label:'Second Warning',neg:true}]
+    );
+    log('Second formal warning from management.','bad');
+  } else if (G.rep <= 35 && w < 1) {
+    G.warningLevel = 1;
+    showResult(
+      'A note appears in your staff folder.<br><br><em>"Guest satisfaction has declined. Please be advised that continued performance below standard will be reviewed."</em><br><br>It is the polite version. The impolite version comes next.',
+      'neutral', [{label:'First Warning'}]
+    );
+    log('First written warning placed in staff file.','neutral');
+  }
+}
+
+
+
+function addXP(xp) {
+  G.rankXP += xp;
+  const thresh = G.rankThresh[G.rank];
+  if (G.rankXP >= thresh && G.rank < 3) {
+    G.rank++; G.rankXP = 0;
+    const msgs = {
+      1: 'Management noticed. You have been moved to the front desk.<br><br>You now process guest check-ins directly. Guests see your face first. Your tips have increased — the desk commands more than a cart ever did.',
+      2: 'The General Manager position is yours. Nobody else wanted it, which tells you something about this hotel.<br><br>You now earn ten times what you earned as a Bellhop. Daily hotel revenue begins flowing when you acquire the property. Guests treat you differently when you wear the title. Some of the permanent residents seem to have noticed as well.',
+      3: 'You own The Bellmore. The deed is in your name, the ghosts are legally your problem, and the boiler is older than you are.<br><br>Revenue flows directly. The 5-star ceiling is gone. The hotel\'s fate is entirely yours.',
+    };
+    log('PROMOTED to ' + G.rankNames[G.rank] + '.', 'good');
+    showResult(msgs[G.rank] || 'You have been promoted.', 'good', [{label:'Now: '+G.rankNames[G.rank],pos:true}]);
+    if (G.rank === 1) addTask('Your first shift at the front desk. The previous clerk left no notes.', 2);
+    if (G.rank === 2) addTask('As General Manager, review the week\'s incident reports and sign off.', 3);
+  }
+}
+
+function ghostMood(name, d) {
+  const g = G.ghosts.find(x=>x.name===name);
+  if (g) g.mood = Math.max(0, Math.min(100, g.mood + d));
+}
+
+function queueArrivals(n) {
+  const pool = guestPool.filter(t =>
+    !G.guests.find(g=>g.name===t.name) &&
+    !G.arrivals.find(a=>a.name===t.name)
+  ).sort(()=>Math.random()-.5);
+  const count = Math.min(n, pool.length);
+  for (let i = 0; i < count; i++) {
+    G.arrivals.push({...pool[i], id:++G.gId, checkInDay:G.day, daysRemaining:pool[i].stayDays});
+  }
+}
+
+// ────────────────────────────────────────────
+// RESULT MODAL
+// ────────────────────────────────────────────
+function showResult(body, type, pills) {
+  const tags = {good:'✦ OUTCOME', bad:'⚠ OUTCOME', ghost:'👻 OUTCOME', neutral:'OUTCOME'};
+  const cls = {good:'rt-good', bad:'rt-bad', ghost:'rt-ghost', neutral:'rt-neutral'};
+  document.getElementById('rTag').textContent = tags[type]||'OUTCOME';
+  document.getElementById('rTag').className = 'result-tag ' + (cls[type]||'rt-neutral');
+  document.getElementById('rBody').innerHTML = body;
+  document.getElementById('rFx').innerHTML = (pills||[]).map(p=>`<span class="ep ${p.pos?'ep-pos':p.neg?'ep-neg':'ep-neu'}">${p.label}</span>`).join('');
+  document.getElementById('resultOverlay').classList.remove('hidden');
+}
+function closeResult() { document.getElementById('resultOverlay').classList.add('hidden'); }
+
+// ────────────────────────────────────────────
+// EVENTS
+// ────────────────────────────────────────────
+function triggerEvent() {
+  if (!G.shuffledEvents) G.shuffledEvents = [...eventPool].sort(()=>Math.random()-.5);
+  const avail = G.shuffledEvents.filter(e=>!G.usedEvents.includes(e.id));
+  if (!avail.length) { G.usedEvents = []; G.shuffledEvents = [...eventPool].sort(()=>Math.random()-.5); return triggerEvent(); }
+  G.activeEvent = avail[0];
+  G.usedEvents.push(G.activeEvent.id);
+  renderAll();
+  sv('today');
+}
+
+function resolveChoice(i) {
+  const ev = G.activeEvent;
+  const ch = ev.choices[i];
+  const fx = ch.fx;
+  const pills = [];
+  if (fx.rep) { changeRep(fx.rep); pills.push({label:(fx.rep>0?'+':'')+fx.rep+' Hotel Rating',pos:fx.rep>0,neg:fx.rep<0}); }
+  if (fx.tips) { G.tips += fx.tips; G.totalTips += Math.max(0,fx.tips); pills.push({label:(fx.tips>0?'+$':'$')+Math.abs(fx.tips)+' Tips',pos:fx.tips>0,neg:fx.tips<0}); }
+  if (fx.gm) { ghostMood(fx.gm[0],fx.gm[1]); pills.push({label:fx.gm[0].split(' ')[0]+' '+(fx.gm[1]>0?'Calmer':'Restless'),pos:fx.gm[1]>0,neg:fx.gm[1]<0}); }
+  if (fx.gm2) { ghostMood(fx.gm2[0],fx.gm2[1]); pills.push({label:fx.gm2[0].split(' ')[0]+' '+(fx.gm2[1]>0?'Calmer':'Restless'),pos:fx.gm2[1]>0,neg:fx.gm2[1]<0}); }
+  if (fx.xp) { addXP(fx.xp); pills.push({label:'+'+fx.xp+' XP'}); }
+  const type = fx.rep>0?'good':fx.rep<0?'bad':(fx.gm?'ghost':'neutral');
+  log('['+ev.title+'] '+ch.text.substring(0,55)+'...', type);
+  showResult(ch.res, type, pills);
+  G.activeEvent = null;
+  renderAll();
+}
+
+// ────────────────────────────────────────────
+// GUEST ACTIONS
+// ────────────────────────────────────────────
+function _completeCheckIn(id) {
+  const a = G.arrivals.find(x=>x.id===id);
+  if (!a) return null;
+  G.arrivals = G.arrivals.filter(x=>x.id!==id);
+  const guest = {...a, happiness:a.happiness, reqDone:false, attendedToday:false, reqFulfilledToday:false};
+  G.guests.push(guest);
+  log(a.name+' checked in to Room '+a.room+'.','good');
+  return a;
+}
+
+// Bellhop: carry bags (costs 1h, happiness boost, tip)
+function carryBags(id) {
+  const a = G.arrivals.find(x=>x.id===id);
+  if (!a) return;
+  if (G.shiftHours <= 0) { showResult('No shift hours remaining.','neutral',[{label:'No Hours Left',neg:true}]); return; }
+  spendHour(1);
+  const guest = _completeCheckIn(id);
+  if (!guest) return;
+  const g = G.guests.find(x=>x.name===guest.name);
+  if (g) g.happiness = Math.min(100, g.happiness + 12);
+  const gained = earn(5); addXP(2);
+  showResult(
+    '<strong>'+guest.name+'</strong> arrives at the front entrance with considerably more luggage than expected.<br><br>You carry every bag without comment. They notice.',
+    'good',
+    [{label:'Checked In',pos:true},{label:'+'+fmt(5)+' Tip',pos:true},{label:'+12% Happiness',pos:true}]
+  );
+  renderAll();
+}
+
+// Bellhop: wave them through (free, no benefit)
+function directToDesk(id) {
+  const a = G.arrivals.find(x=>x.id===id);
+  if (!a) return;
+  const guest = _completeCheckIn(id);
+  if (!guest) return;
+  log(guest.name+' directed to the front desk.','neutral');
+  showResult(
+    'You point <strong>'+guest.name+'</strong> toward the front desk with a courteous gesture. They manage their own bags. First impressions, noted.',
+    'neutral',
+    [{label:'Checked In'}]
+  );
+  renderAll();
+}
+
+// Front Desk Clerk+: process the check-in formally
+function processCheckIn(id) {
+  const a = G.arrivals.find(x=>x.id===id);
+  if (!a) return;
+  if (G.shiftHours <= 0) { showResult('No shift hours remaining.','neutral',[{label:'No Hours Left',neg:true}]); return; }
+  const cost = owned('bellcart') ? 0 : 1;
+  spendHour(cost);
+  const guest = _completeCheckIn(id);
+  if (!guest) return;
+  const g = G.guests.find(x=>x.name===guest.name);
+  if (g) g.happiness = Math.min(100, g.happiness + 8);
+  addXP(2); const gained = earn(3);
+  showResult(
+    'You process <strong>'+guest.name+'</strong>\'s reservation, confirm their room, and dispatch a bellhop with their luggage. Professional. Efficient. Exactly right.',
+    'good',
+    [{label:'Checked In',pos:true},{label:'+8% Happiness',pos:true}]
+  );
+  renderAll();
+}
+
+function stopByRoom(id) {
+  const g = G.guests.find(x=>x.id===id);
+  if (!g) return;
+  if (g.attendedToday) {
+    showResult('You have already stopped by for <strong>'+g.name+'</strong> today. Another visit would be hovering.','neutral',[{label:'Come Back Tomorrow'}]);
+    return;
+  }
+  if (G.shiftHours <= 0) {
+    showResult('No shift hours remaining. Close out the day to begin a new shift.','neutral',[{label:'No Hours Left',neg:true}]);
+    return;
+  }
+  spendHour(1);
+  g.attendedToday = true;
+  const wasMaxed = g.happiness >= 100;
+  const boost = Math.min(100-g.happiness, 10+Math.floor(Math.random()*8));
+  g.happiness = Math.min(100, g.happiness+boost);
+  const earned = earn(3); addXP(1);
+  const lineGen = stopByLines[Math.floor(Math.random()*stopByLines.length)];
+  const flavorLine = lineGen(g.name.split(' ')[g.name.split(' ').length > 1 ? 1 : 0]);
+  if (g.happiness >= 100 && !wasMaxed) {
+    const bonusBase = 20 + (owned('tipjar')?6:0);
+    const bonus = earn(bonusBase); changeRep(5);
+    log(g.name+' is completely delighted. Outstanding service.','good');
+    showResult(flavorLine+'<br><br><strong>'+g.name+'</strong> pulls you aside a moment later.<br><br>"I was going to write a scathing review before you got here. Consider it buried."<br><br>They press a folded bill into your hand.','good',[{label:'+'+fmt(bonusBase)+' Bonus',pos:true},{label:'+5 Hotel Rating',pos:true},{label:'Guest Thrilled',pos:true}]);
+  } else {
+    log('Stopped by '+g.name+'\'s room. +'+boost+'% mood.','neutral');
+    showResult(flavorLine,'neutral',[{label:'+'+boost+'% Mood',pos:true},{label:'+'+fmt(3),pos:true}]);
+  }
+  renderAll();
+}
+
+function fulfillRequest(id) {
+  const g = G.guests.find(x=>x.id===id);
+  if (!g||g.reqDone) return;
+  if (g.reqFulfilledToday) {
+    showResult('You have already worked on a request today for <strong>'+g.name+'</strong>.','neutral',[{label:'Already Done Today'}]);
+    return;
+  }
+  if (G.shiftHours < 2) {
+    showResult('Fulfilling a guest request takes 2 hours. You only have '+G.shiftHours+' left. End your shift to reset.','neutral',[{label:'Not Enough Hours',neg:true}]);
+    return;
+  }
+  spendHour(2);
+  g.reqDone = true; g.reqFulfilledToday = true;
+  const r = g.reqReward||10;
+  const gained = earn(r);
+  g.happiness = Math.min(100, g.happiness+15);
+  changeRep(4); addXP(2);
+  log('Fulfilled '+g.name+'\'s request. +'+fmt(r)+'.','good');
+  showResult('<strong>'+g.name+'</strong> gets what they asked for.<br><br><em>"'+g.request+'."</em><br><br>They look genuinely pleased, which at The Bellmore you do not take for granted.','good',[{label:'+'+fmt(r),pos:true},{label:'+15% Mood',pos:true},{label:'+4 Rating',pos:true}]);
+  renderAll();
+}
+
+function checkoutGuest(id) {
+  const g = G.guests.find(x=>x.id===id);
+  if (!g) return;
+  const bonusBase = owned('tipjar')?6:0;
+  const tipBase = g.happiness>=90?20+bonusBase:g.happiness>=70?10+bonusBase:g.happiness>=50?3:0;
+  const tip = earn(tipBase);
+  if (g.happiness>=85) changeRep(4);
+  else if (g.happiness>=60) changeRep(1);
+  else changeRep(-4,'a guest checked out and posted a negative review');
+  log(g.name+' checked out. Happiness: '+g.happiness+'%. Tip: '+fmt(tipBase)+'.', tipBase>8?'good':g.happiness<50?'bad':'neutral');
+  G.guests = G.guests.filter(x=>x.id!==id);
+  renderAll();
+}
+
+// ────────────────────────────────────────────
+// GHOST ACTIONS
+// ────────────────────────────────────────────
+function interactGhost(id) {
+  const g = G.ghosts.find(x=>x.id===id);
+  if (!g) return;
+  if (g.interactedToday) {
+    showResult('You have already done what you can for <strong>'+g.name+'</strong> today. Come back tomorrow.','neutral',[{label:'Come Back Tomorrow'}]);
+    return;
+  }
+  if (G.shiftHours <= 0) {
+    showResult('No shift hours remaining. Close out the day to begin a new shift.','neutral',[{label:'No Hours Left',neg:true}]);
+    return;
+  }
+  spendHour(1);
+  g.interactedToday = true;
+  const boost = 10+Math.floor(Math.random()*12);
+  g.mood = Math.min(100, g.mood+boost);
+  addXP(1);
+  const line = g.sootheLine[Math.floor(Math.random()*g.sootheLine.length)];
+  log('Tended to '+g.name+'. Mood improved.','ghost');
+  showResult(line,'ghost',[{label:'+'+boost+' Mood',pos:true},{label:'+1 XP',pos:true}]);
+  renderAll();
+}
+
+function leaveAlone(id) {
+  const g = G.ghosts.find(x=>x.id===id);
+  if (!g) return;
+  // Mixed outcomes — not always bad
+  const roll = Math.random();
+  const line = g.ignoreLine ? g.ignoreLine[Math.floor(Math.random()*g.ignoreLine.length)] : 'You give them space. The hotel settles quietly.';
+  if (roll < 0.35) {
+    // Bad outcome
+    g.mood = Math.max(0, g.mood-10);
+    changeRep(-2,'a permanent resident took exception to being ignored');
+    log('Left '+g.name+' alone. They did not take it well.','bad');
+    showResult(line,'bad',[{label:'-10 Mood',neg:true},{label:'-2 Rating',neg:true}]);
+  } else if (roll < 0.7) {
+    // Neutral — nothing happens
+    log('Left '+g.name+' alone. Quiet night on that floor.','neutral');
+    showResult(line,'neutral',[{label:'No Change'}]);
+  } else {
+    // Good — some ghosts appreciate being left to their own business
+    g.mood = Math.min(100, g.mood+5);
+    log('Left '+g.name+' alone. They seemed to appreciate it.','ghost');
+    showResult(line,'ghost',[{label:'+5 Mood',pos:true}]);
+  }
+  renderAll();
+}
+
+function ghostHistory(id) {
+  const g = G.ghosts.find(x=>x.id===id);
+  if (g) showResult(g.backstory,'ghost',[{label:'Room '+g.room+' · '+g.era}]);
+}
+
+// ────────────────────────────────────────────
+// TASKS
+// ────────────────────────────────────────────
+function completeTask(id) {
+  const t = G.tasks.find(x=>x.id===id);
+  if (!t) return;
+  if (G.shiftHours <= 0) {
+    showResult('No shift hours remaining. End your shift to start a new day.','neutral',[{label:'No Hours Left',neg:true}]);
+    return;
+  }
+  spendHour(1);
+  t.done = true; earn(2); addXP(t.xp);
+  log('Completed: "'+t.title+'"','good');
+  renderAll();
+}
+
+// ────────────────────────────────────────────
+// SHOP
+// ────────────────────────────────────────────
+function buyUpgrade(uid) {
+  const u = G.upgrades.find(x=>x.id===uid);
+  if (!u||u.owned) return;
+  const cost = uid === 'buyhotel' ? hotelPrice() : u.cost;
+  if (G.tips < cost) {
+    if (uid === 'buyhotel') {
+      showResult('The Bellmore is currently valued at '+fmt(cost)+'. You have '+fmt(G.tips)+'. You are '+fmt(cost-G.tips)+' short.','neutral',[{label:'Not Enough',neg:true}]);
+    } else {
+      showResult('You need '+fmt(cost)+' for <strong>'+u.name+'</strong>. You have '+fmt(G.tips)+'. You are '+fmt(cost-G.tips)+' short.','neutral',[{label:'Not Enough',neg:true}]);
+    }
+    return;
+  }
+  G.tips = Math.max(0, G.tips - cost);
+  u.owned = true;
+  if (uid === 'buyhotel') {
+    log('The Bellmore is yours. For better or worse.','good');
+    showResult(
+      '"<em>I\'m buying my own hotel!</em>"<br><br>You actually say it out loud. The previous owner, already halfway out the door, turns back with an expression you cannot fully interpret.<br><br>The paperwork is signed. The deed is in your name. The building, the staff, the guests, the permanent residents. All of it.<br><br>The ceiling is gone. Five stars is now possible. Good luck.',
+      'good',
+      [{label:'Owner',pos:true},{label:'5 Stars Unlocked',pos:true},{label:'Revenue Begins Tonight',pos:true}]
+    );
+  } else {
+    log('Purchased: '+u.name,'good');
+    showResult('<strong>'+u.name+'</strong> installed and active.<br><br>'+u.desc,'good',[{label:'-$'+cost,neg:true},{label:'Active',pos:true}]);
+  }
+  renderAll();
+}
+
+// ────────────────────────────────────────────
+// ADVANCE DAY
+// ────────────────────────────────────────────
+function advanceDay() {
+  G.day++;
+  G.shiftHours = SHIFT_HOURS;
+
+  // Reset daily flags
+  G.guests.forEach(g=>{ g.attendedToday = false; g.reqFulfilledToday = false; });
+  G.ghosts.forEach(g=>{ g.interactedToday = false; });
+
+  // Lobby flowers upgrade
+  if (owned('flowers')) { changeRep(4); log('Lobby flowers: +4 hotel rating.','good'); }
+
+  // Hotel ownership revenue
+  if (owned('buyhotel')) {
+    const revenueBase = 500 + (G.guests.length * 200) + (repToStars(G.rep) * 300);
+    const revenue = earn(revenueBase);
+    log('Hotel revenue: +'+fmt(revenueBase)+' from overnight operations.','good');
+  }
+
+  // Ghost mood effects — always drift down, only tending slows it
+  G.ghosts.forEach(gh=>{
+    // Drift: tended = -1/night, untended = -6/night. No self-healing.
+    const drift = gh.interactedToday ? -1 : -6;
+    gh.mood = Math.max(5, Math.min(95, gh.mood + drift));
+    if (owned('incense') && gh.name==='Agnes Bleecker') gh.mood = Math.min(95, gh.mood+10);
+
+    if (gh.mood < 30) {
+      changeRep(-7, 'a restless permanent resident on Floor '+Math.ceil(gh.room/4));
+      log(gh.name+' was restless all night. Guests on that floor suffered.','bad');
+      // Floor contamination — guests in adjacent rooms lose happiness
+      G.guests.forEach(g => {
+        if (Math.abs(g.room - gh.room) <= 5) {
+          const spook = 12 + Math.floor(Math.random()*8);
+          g.happiness = Math.max(0, g.happiness - spook);
+          log(g.name+' had a disturbed night near Room '+gh.room+'.','bad');
+        }
+      });
+    } else if (gh.mood >= 75) {
+      changeRep(2);
+      log(gh.name+' was settled overnight.','good');
+    }
+  });
+
+  // Incomplete tasks
+  const pending = G.tasks.filter(t=>!t.done).length;
+  if (pending>2&&!owned('auditor')) { changeRep(-4,'tasks left unfinished overnight'); log(pending+' tasks left unfinished overnight.','bad'); }
+  else if (pending>0&&!owned('auditor')) { changeRep(-1,'minor overnight neglect'); }
+  G.tasks = G.tasks.filter(t=>!t.done);
+
+  // Guest happiness decay — ignoring guests costs you
+  G.guests.forEach(g=>{
+    if (!g.attendedToday && !g.reqFulfilledToday) {
+      // VIPs decay fastest, trouble guests are volatile, sensitive guests are forgiving
+      const decay = g.tag==='vip' ? 15 : g.tag==='trouble' ? 12 : g.tag==='sensitive' ? 6 : 10;
+      g.happiness = Math.max(0, g.happiness - decay);
+      if (g.happiness < 40) log(g.name+' is dissatisfied. Nobody checked in on them today.','bad');
+      else if (g.happiness < 60) log(g.name+' is growing impatient.','neutral');
+    }
+  });
+
+  // In-house unhappiness — ongoing drain for miserable guests
+  const toCheckout = [];
+  G.guests.forEach(g=>{
+    if (g.happiness < 30) { changeRep(-6, 'a guest in visible distress still on the premises'); log(g.name+' is miserable. They are telling other guests.','bad'); }
+    else if (g.happiness < 50) { changeRep(-2, 'unhappy guest'); }
+    g.daysRemaining = (g.daysRemaining||2) - 1;
+    if (g.daysRemaining <= 0) toCheckout.push(g.id);
+  });
+  toCheckout.forEach(id=>{
+    const g = G.guests.find(x=>x.id===id);
+    if (!g) return;
+    const bonusBase = owned('tipjar') ? 6 : 0;
+    const tipBase = g.happiness>=90 ? 25+bonusBase : g.happiness>=70 ? 14+bonusBase : g.happiness>=50 ? 4 : 0;
+    earn(tipBase);
+    if (g.happiness >= 85) { changeRep(5); log(g.name+' checked out delighted.','good'); }
+    else if (g.happiness >= 60) { changeRep(1); log(g.name+' checked out satisfied.','neutral'); }
+    else if (g.happiness >= 40) { changeRep(-5, 'a disappointed checkout'); log(g.name+' checked out disappointed.','bad'); }
+    else { changeRep(-10, 'a guest who left furious'); log(g.name+' checked out furious. Expect a review.','bad'); }
+    G.guests = G.guests.filter(x=>x.id!==id);
+  });
+
+  // Queue new arrivals (1 or 2)
+  const newCount = Math.random()>0.4 ? 2 : 1;
+  queueArrivals(newCount);
+
+  // Unlock new ghosts over time
+  checkGhostUnlocks();
+
+  // New task — shuffle-based, no repeats until pool exhausted
+  if (G.tasks.length < 3) {
+    const eligible = taskPool.filter(t =>
+      (!t.needsGuests || G.guests.length > 0) &&
+      (!t.needsOwner || owned('buyhotel'))
+    );
+    if (!G.usedTasks) G.usedTasks = [];
+    let avail = eligible.filter(t => !G.usedTasks.includes(t.t));
+    if (!avail.length) { G.usedTasks = []; avail = eligible; }
+    const pick = avail[Math.floor(Math.random()*avail.length)];
+    G.usedTasks.push(pick.t);
+    addTask(pick.t, pick.xp);
+  }
+
+  G.condIdx = Math.floor(Math.random()*conditions.length);
+  log('Day '+G.day+' begins at The Bellmore.','neutral');
+
+  // Owner bankruptcy check
+  if (owned('buyhotel') && G.tips <= 0 && G.rep <= 10) {
+    gameOver('bankruptcy');
+    return;
+  }
+
+  // No events day 1; from day 2 events only trigger if at least one guest is checked in OR it's a ghost-only event
+  const canEvent = G.day > 1 && (G.guests.length > 0 || Math.random() > 0.5);
+  if (canEvent && (G.day%2===0||Math.random()>0.55)) triggerEvent();
+  else renderAll();
+}
+
+// ────────────────────────────────────────────
+// GAME OVER
+// ────────────────────────────────────────────
+function gameOver(cause) {
+  const isOwner = owned('buyhotel');
+  let headline, msg;
+
+  if (isOwner && cause === 'bankruptcy') {
+    headline = 'FORECLOSED';
+    msg = 'The bank sent someone on a Tuesday. Pleasant enough fellow, all things considered. He asked you to vacate by end of week and apologized for the short notice. The Bellmore is in receivership. The permanent residents are, presumably, still there. They always are.';
+  } else if (isOwner) {
+    headline = 'CLOSED';
+    msg = 'You owned The Bellmore and you still lost it. The county condemned the building after the third formal complaint in a week. The deed is in your name, which means the liability is too. The ghosts, the lawyers noted in their filing, are not your legal problem. Everything else is.';
+  } else {
+    headline = 'TERMINATED';
+    const loss = G.lastRepLoss || '';
+    let msg;
+    if (loss.includes('resident') || loss.includes('ghost') || loss.includes('Floor')) {
+      msg = 'The official reason given was "failure to maintain guest comfort standards." The real reason was several consecutive nights of The Bellmore sounding like something you cannot explain. Management did not investigate. They just let you go.';
+    } else if (loss.includes('furious') || loss.includes('checkout') || loss.includes('disappointed')) {
+      msg = 'The review that ended your tenure here was posted at 11:42pm. Four sentences. The third sentence mentioned the smell. There was no smell when you worked here. There is now.';
+    } else if (loss.includes('distress') || loss.includes('unhappy guest') || loss.includes('miserable')) {
+      msg = 'Too many guests left unhappy. The reviews accumulated. Management called you in on a Tuesday morning, which is always a bad sign, and handed you a letter that used the word "regrettably" four times.';
+    } else if (loss.includes('task')) {
+      msg = 'The final straw was not dramatic. It was a printed list of undone tasks left on your desk with one handwritten line at the bottom: "We expect more from our staff." You did not expect that to be the last thing you read here.';
+    } else {
+      msg = 'Management called it a "poor fit." The permanent residents of The Bellmore, who have seen many employees come and go over the decades, made no comment.';
+    }
+  }
+
+  document.getElementById('overMsg').innerHTML = msg;
+  document.getElementById('overHeadline').textContent = headline;
+  document.getElementById('overStats').textContent = 'Days worked: '+G.day+' · Tips earned: '+fmt(G.totalTips)+' · Final rank: '+G.rankNames[G.rank];
+  document.getElementById('overScreen').classList.remove('hidden');
+}
+
+// ────────────────────────────────────────────
+// RENDER
+// ────────────────────────────────────────────
+function renderAll() {
+  const stars = repToStars(G.rep);
+  const season = getSeason(G.day);
+  const timeColor = G.shiftHours > 4 ? 'var(--gold)' : G.shiftHours > 1 ? '#e67e22' : 'var(--red-bright)';
+  const timePct = (G.shiftHours / SHIFT_HOURS) * 100;
+
+  // Header pills
+  document.getElementById('tipsVal').textContent = fmt(G.tips);
+  document.getElementById('occupancyVal').textContent = G.guests.length+'🧍 '+G.ghosts.length+'👻';
+  document.getElementById('seasonVal').textContent = seasonIcons[season]+' '+season;
+  document.getElementById('timeVal').textContent = G.shiftHours+'h';
+  document.getElementById('timeVal').style.color = timeColor;
+
+  // Nav badges
+  const todayBadge = document.getElementById('badge-today');
+  const guestsBadge = document.getElementById('badge-guests');
+  const ghostsBadge = document.getElementById('badge-ghosts');
+
+  // Today: badge if active event
+  if (G.activeEvent) {
+    todayBadge.textContent = '!'; todayBadge.style.display = 'block';
+  } else {
+    todayBadge.style.display = 'none';
+  }
+
+  // Guests: badge = number of arrivals waiting to be checked in
+  const arrivalCount = G.arrivals.length;
+  if (arrivalCount > 0) {
+    guestsBadge.textContent = arrivalCount; guestsBadge.style.display = 'block';
+  } else {
+    guestsBadge.style.display = 'none';
+  }
+
+  // Ghosts: badge = number of restless residents (mood < 35) who haven't been tended to today
+  const restlessCount = G.ghosts.filter(g => g.mood < 35 && !g.interactedToday).length;
+  if (restlessCount > 0) {
+    ghostsBadge.textContent = restlessCount; ghostsBadge.style.display = 'block';
+  } else {
+    ghostsBadge.style.display = 'none';
+  }
+  document.getElementById('dayVal').textContent = G.day;
+  document.getElementById('condStr').textContent = conditions[G.condIdx||0];
+  document.getElementById('rankLabel').textContent = G.rankNames[G.rank];
+  const xpPct = G.rank<3?(G.rankXP/G.rankThresh[G.rank]*100):100;
+  document.getElementById('rankFill').style.width = xpPct+'%';
+  document.getElementById('rankProg').textContent = G.rank<3?G.rankXP+'/'+G.rankThresh[G.rank]+' XP':'MAX';
+
+  let starHtml = '';
+  for (let i=1;i<=5;i++) starHtml+=`<span class="star ${i<=stars?'on':'off'}">★</span>`;
+  document.getElementById('starDisplay').innerHTML = starHtml;
+  document.getElementById('starTier').textContent = starTiers[stars];
+  document.getElementById('repBar').style.cssText = 'width:'+repBarPct(G.rep)+'%;background:'+repBarColor(G.rep);
+  document.getElementById('repBar').classList.toggle('danger', G.rep <= 35);
+  document.getElementById('timeBar').style.cssText = 'width:'+timePct+'%;background:'+timeColor;
+  document.getElementById('timeBarLabel').textContent = G.shiftHours+' of '+SHIFT_HOURS;
+
+  // No time banner
+  const banner = document.getElementById('noTimeBanner');
+  banner.innerHTML = G.shiftHours <= 0
+    ? '<div class="no-time-banner">Your shift hours are used up. End the shift to begin a new day.</div>'
+    : '';
+
+  // Active event
+  const evSlot = document.getElementById('activeEventSlot');
+  if (G.activeEvent) {
+    const ev = G.activeEvent;
+    evSlot.innerHTML = `<div class="event-card">
+      <div class="event-label">⚠ Incident Requires Your Attention</div>
+      <div class="event-title">${ev.title}</div>
+      <div class="event-body">${ev.body}</div>
+      ${ev.choices.map((c,i)=>`<button class="choice-btn" onclick="resolveChoice(${i})">${c.text}<span class="choice-hint">${c.hint}</span></button>`).join('')}
+    </div>`;
+  } else {
+    evSlot.innerHTML = '';
+  }
+
+  // Arrival notifications on Today tab
+  const notifSlot = document.getElementById('arrivalNotifSlot');
+  if (G.arrivals.length) {
+    const isBellhop = G.rank === 0;
+    notifSlot.innerHTML = `<div style="margin-bottom:10px">
+      <div class="sec-title" style="margin-bottom:8px">Arriving Now <span class="sec-count">${G.arrivals.length}</span></div>
+      ${G.arrivals.map(a => {
+        const tag = a.tag ? `<span class="ctag ctag-${a.tag}" style="font-size:8px">${a.tagLabel}</span>` : '';
+        const actions = isBellhop
+          ? `<button class="btn btn-gold" onclick="carryBags(${a.id})" ${G.shiftHours<=0?'disabled':''}>Carry Bags <span class="cost-badge">1h</span></button>
+             <button class="btn btn-dim" onclick="directToDesk(${a.id})">Direct to Desk</button>`
+          : `<button class="btn btn-gold btn-full" onclick="processCheckIn(${a.id})" ${G.shiftHours<=0?'disabled':''}>Process Check-in ${!owned('bellcart')?'<span class="cost-badge">1h</span>':'<span class="cost-badge">Free</span>'}</button>`;
+        return `<div style="background:var(--paper);border:1px solid #8e44ad;border-radius:6px;padding:10px 12px;margin-bottom:6px;border-left:3px solid #9b59b6">
+          <div style="font-size:9px;color:#c39bd3;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Guest Arriving · Room ${a.room}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-family:'Playfair Display',serif;font-size:13px">${a.name}</span>${tag}
+          </div>
+          <div class="card-actions" style="margin-top:8px">${actions}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } else {
+    notifSlot.innerHTML = '';
+  }
+  const pending = G.tasks.filter(t=>!t.done);
+  document.getElementById('taskCount').textContent = pending.length;
+  const tl = document.getElementById('taskList');
+  if (!pending.length) {
+    tl.innerHTML = '<div class="empty-state">No pending tasks.<br>Suspiciously quiet.</div>';
+  } else {
+    tl.innerHTML = pending.map(t=>`<div class="card ctask">
+      <div class="card-name" style="font-size:13px;line-height:1.4;margin-bottom:5px">${t.title}</div>
+      <div style="font-size:10px;color:var(--ink-faint)">+${t.xp} XP <span class="cost-badge">1 hour</span></div>
+      <div class="card-actions" style="margin-top:8px">
+        <button class="btn btn-green btn-full" onclick="completeTask(${t.id})" ${G.shiftHours<=0?'disabled':''}>See to It</button>
+      </div></div>`).join('');
+  }
+
+  // Today's log — only entries from current day
+  const todayLogEl = document.getElementById('todayLog');
+  const todayEntries = G.log.filter(l => l.day === G.day);
+  if (!todayEntries.length) {
+    todayLogEl.innerHTML = '<div class="empty-state" style="padding:10px 0">Nothing logged yet today.</div>';
+  } else {
+    todayLogEl.innerHTML = todayEntries.map(l => {
+      const c = l.type==='good'?'var(--green-bright)':l.type==='bad'?'var(--red-bright)':l.type==='ghost'?'var(--ghost)':'var(--ink-dim)';
+      return `<div class="log-line" style="color:${c}">${l.msg}</div>`;
+    }).join('');
+  }
+
+  // Arrivals (Guests tab)
+  document.getElementById('arrivalCount').textContent = G.arrivals.length;
+  const al = document.getElementById('arrivalList');
+  if (!G.arrivals.length) {
+    al.innerHTML = '<div class="empty-state">No arrivals expected today.</div>';
+  } else {
+    const isBellhop = G.rank === 0;
+    al.innerHTML = G.arrivals.map(a=>{
+      const tag = a.tag?`<span class="ctag ctag-${a.tag}">${a.tagLabel}</span>`:'';
+      const actions = isBellhop
+        ? `<button class="btn btn-gold" onclick="carryBags(${a.id})" ${G.shiftHours<=0?'disabled':''}>Carry Bags <span class="cost-badge">1h</span></button>
+           <button class="btn btn-dim" onclick="directToDesk(${a.id})">Direct to Desk</button>`
+        : `<button class="btn btn-gold btn-full" onclick="processCheckIn(${a.id})" ${G.shiftHours<=0?'disabled':''}>Process Check-in ${!owned('bellcart')?'<span class="cost-badge">1h</span>':'<span class="cost-badge">Free</span>'}</button>`;
+      return `<div class="arrival-card">
+        <div class="arrival-label">Checking In Today · Room ${a.room}</div>
+        <div class="card-head"><div class="card-name">${a.name}</div>${tag}</div>
+        <div class="card-desc">${a.desc}</div>
+        <div class="card-actions" style="margin-top:10px">${actions}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Guests
+  document.getElementById('guestCount').textContent = G.guests.length;
+  const gl = document.getElementById('guestList');
+  if (!G.guests.length) {
+    gl.innerHTML = '<div class="empty-state">No guests currently checked in.<br>Check arrivals above.</div>';
+  } else {
+    gl.innerHTML = G.guests.map(g=>{
+      const mc = moodColor(g.happiness);
+      const tag = g.tag?`<span class="ctag ctag-${g.tag}">${g.tagLabel}</span>`:'';
+      const stayInfo = `<span style="font-size:10px;color:var(--ink-faint)">${g.daysRemaining} day${g.daysRemaining!==1?'s':''} remaining</span>`;
+      const reqHtml = !g.reqDone
+        ? `<div class="req-badge">
+             <span class="req-text">Request: ${g.request}</span>
+             <span class="req-cost">2 hours</span>
+             <span class="req-reward">+$${g.reqReward}</span>
+           </div>`
+        : `<div style="font-size:10px;color:var(--green-bright);margin-top:6px;font-style:italic">✓ Request fulfilled</div>`;
+      return `<div class="card cguest ${g.happiness>=100?'guest-maxed':''}">
+        <div class="card-head"><div class="card-name">Rm ${g.room} · ${g.name}</div>${tag}</div>
+        <div class="card-desc">${g.desc}</div>
+        ${stayInfo}
+        ${reqHtml}
+        <div class="mood-row"><span class="mood-label">Mood</span><div class="mood-track"><div class="mood-fill" style="width:${g.happiness}%;background:${mc}"></div></div><span class="mood-pct" style="color:${mc}">${g.happiness}%</span></div>
+        <div class="card-actions">
+          <button class="btn btn-gold" onclick="stopByRoom(${g.id})" ${g.attendedToday||G.shiftHours<=0?'disabled':''}>
+            ${g.happiness>=100?'⭐ VIP':g.attendedToday?'Done Today':'Stop By Room'}
+            ${!g.attendedToday?'<span class="cost-badge">1h</span>':''}
+          </button>
+          ${!g.reqDone?`<button class="btn btn-purple" onclick="fulfillRequest(${g.id})" ${g.reqFulfilledToday||G.shiftHours<2?'disabled':''}>See to Request <span class="cost-badge">2h</span></button>`:''}
+          <button class="btn btn-dim" onclick="checkoutGuest(${g.id})">Check Out</button>
+        </div></div>`;
+    }).join('');
+  }
+
+  document.getElementById('ghostCount').textContent = G.ghosts.length;
+  document.getElementById('ghostList').innerHTML = G.ghosts.map(g=>{
+    const ms=moodState(g.mood); const mc=moodColor(g.mood);
+    const verb = g.interactVerb || 'Tend To';
+    const canInteract = !g.interactedToday && G.shiftHours > 0;
+    return `<div class="card cghost">
+      <div class="card-head"><div class="card-name ghost-shimmer">${g.name}</div><span class="ctag ctag-${ms}">${ms}</span></div>
+      <div class="card-desc">${g.desc}</div>
+      <div style="font-size:10px;color:var(--ink-faint);margin-top:5px;font-style:italic">Room ${g.room} · ${g.era} · Wants: ${g.want}</div>
+      <div class="mood-row" style="margin-top:8px"><span class="mood-label">Mood</span><div class="mood-track"><div class="mood-fill" style="width:${g.mood}%;background:${mc}"></div></div><span class="mood-pct" style="color:${mc}">${g.mood}%</span></div>
+      <div class="card-actions">
+        <button class="btn btn-ghost" onclick="interactGhost(${g.id})" ${canInteract?'':'disabled'}>${g.interactedToday?'Done Today':verb} ${canInteract?'<span class="cost-badge">1h</span>':''}</button>
+        <button class="btn btn-dim" onclick="leaveAlone(${g.id})">Leave Be</button>
+        <button class="btn btn-dim" style="flex:0;min-width:64px;text-align:center;padding:7px 8px" onclick="ghostHistory(${g.id})">History</button>
+      </div></div>`;
+  }).join('');
+
+  // Stats
+  const starStr = '★'.repeat(stars) + '☆'.repeat(5-stars);
+  document.getElementById('statRank').textContent = G.rankNames[G.rank];
+  document.getElementById('statDays').textContent = G.day;
+  document.getElementById('statTips').textContent = '$'+G.totalTips;
+  document.getElementById('statXP').textContent = G.rank<3?G.rankXP+'/'+G.rankThresh[G.rank]+' XP':'MAXED';
+  document.getElementById('statStars').textContent = starStr+' '+starTiers[stars];
+  document.getElementById('statSeason').textContent = season;
+  document.getElementById('statDay').textContent = G.day;
+  document.getElementById('statGuests').textContent = G.guests.length;
+  document.getElementById('statGhosts').textContent = G.ghosts.length;
+
+  // Ledger
+  const ll = document.getElementById('logList');
+  if (!G.log.length) { ll.innerHTML='<div class="empty-state">The ledger is blank.</div>'; }
+  else ll.innerHTML = G.log.map(l=>{
+    const c = l.type==='good'?'var(--green-bright)':l.type==='bad'?'var(--red-bright)':l.type==='ghost'?'var(--ghost)':'var(--ink-dim)';
+    return `<div class="log-line" style="color:${c}"><span style="color:var(--ink-faint);margin-right:5px">Day ${l.day}:</span>${l.msg}</div>`;
+  }).join('');
+
+  // Shop
+  document.getElementById('shopTips').textContent = fmt(G.tips);
+  document.getElementById('shopList').innerHTML = G.upgrades.map(u=>{
+    if (u.special) {
+      const price = hotelPrice();
+      const starLabels = {1:'Questionable',2:'Adequate',3:'Respectable',4:'Distinguished',5:'Grand'};
+      const stars = repToStars(G.rep);
+      return `<div class="upgrade-card ${u.owned?'owned':''}" style="${!u.owned?'border-color:var(--gold);background:rgba(201,168,76,.04)':''}">
+        <div style="font-size:9px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">${u.owned?'✓ ACQUIRED':'Acquisition Opportunity'}</div>
+        <div class="upgrade-name" style="font-size:16px">${u.name}</div>
+        <div class="upgrade-desc" style="margin-bottom:10px">${u.desc}</div>
+        ${u.owned
+          ? '<div style="font-size:11px;color:var(--green-bright)">The deed is in your name. Revenue flows nightly.</div>'
+          : `<div style="font-size:9px;color:var(--ink-faint);margin-bottom:8px;font-style:italic">Current valuation at ${stars}-star (${starLabels[stars]}): rises with your reputation.</div>
+             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+               <div style="font-size:14px;color:var(--gold);font-weight:bold;font-family:'Playfair Display',serif">${fmt(price)}</div>
+               <button class="btn ${G.tips>=price?'btn-gold':'btn-dim'}" onclick="buyUpgrade('${u.id}')" style="flex:0;min-width:100px;border:none">${G.tips>=price?'Make the Offer':'Need '+fmt(price)}</button>
+             </div>`
+        }
+      </div>`;
+    }
+    return `<div class="upgrade-card ${u.owned?'owned':''}">
+      <div class="upgrade-name">${u.name}</div>
+      <div class="upgrade-desc">${u.desc}</div>
+      ${u.owned
+        ? '<div style="font-size:10px;color:var(--green-bright);letter-spacing:1px">✓ INSTALLED</div>'
+        : `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+             <div style="font-size:12px;color:var(--green-bright);font-weight:bold">$${u.cost}</div>
+             <button class="btn ${G.tips>=u.cost?'btn-purple':'btn-dim'}" onclick="buyUpgrade('${u.id}')" style="flex:0;min-width:90px">${G.tips>=u.cost?'Purchase ('+fmt(u.cost)+')':'Need '+fmt(u.cost)}</button>
+           </div>`
+      }
+    </div>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────
+// NAV
+// ────────────────────────────────────────────
+function sv(name) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+</script>
+</body>
+</html>
