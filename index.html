@@ -2263,5 +2263,26 @@ function sv(name) {
 introControlsRender();
 
 </script>
+<script src="tools/audio.js"></script>
+<script>window.AudioFX && window.AudioFX.resumeOnUserGesture(document);</script>
+<script>
+  (function(){
+    if (!window.AudioFX) return;
+    const handle = () => {
+      try {
+        if (window.AudioFX.ctx && window.AudioFX.ctx.state === 'suspended') {
+          window.AudioFX.ctx.resume().catch(()=>{});
+        }
+        // gentle preview so user knows audio is enabled
+        window.AudioFX.setVolume(0.35);
+        window.AudioFX.playTick();
+      } catch(e){}
+      document.removeEventListener('pointerdown', handle);
+      document.removeEventListener('keydown', handle);
+    };
+    document.addEventListener('pointerdown', handle);
+    document.addEventListener('keydown', handle);
+  })();
+</script>
 </body>
 </html>
