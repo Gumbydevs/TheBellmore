@@ -1,173 +1,253 @@
-class AudioFX {
-  constructor() {
-    this.ctx = null;
-    this.master = null;
-    this.volume = 0.45; // safe default
-    this._noiseBuffer = null;
+﻿/**
+ * AudioFX — tiny Web Audio synth for The Bellmore
+ *
+ * KEY DESIGN RULES (why previous version was silent):
+ *  1. AudioContext must NOT be created at script-load time — browsers block it
+ *     outside a user gesture. We create it lazily on the first play call.
+ *  2. ctx.currentTime must always come from a live context. Returning 0 as a
+ *     fallback schedules sounds in the past; the browser drops them silently.
+ *  3. All play functions await ctx.resume() before scheduling, so they work
+ *     even if the context is still suspended when the gesture fires.
+ */
+
+(function () {
+  'use strict';
+
+  let ctx = null;
+  let master = null;
+  let _noiseBuffer = null;
+  let _vol = 0.325;
+
+  /* ── Context bootstrap ── */
+
+  function getCtx() {
+    if (!ctx) {
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return null;
+      ctx = new Ctor();
+      master = ctx.createGain();
+      master.gain.value = _vol;
+      master.connect(ctx.destination);
+    }
+    return ctx;
   }
 
-  _init() {
-    if (this.ctx) return;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    this.ctx = new Ctx();
-    this.master = this.ctx.createGain();
-    this.master.gain.value = this.volume;
-    this.master.connect(this.ctx.destination);
+  // Always use the live currentTime — never a 0 fallback.
+  function now() { return ctx ? ctx.currentTime : 0; }
+
+  // Resume if suspended (returns a Promise).
+  function ready() {
+    const c = getCtx();
+    if (!c) return Promise.reject('No AudioContext');
+    return c.state === 'suspended' ? c.resume() : Promise.resolve();
   }
 
-  resumeOnUserGesture(root = document) {
-    this._init();
-    const resume = () => {
-      if (this.ctx && this.ctx.state === 'suspended') {
-        this.ctx.resume().catch(()=>{});
-      }
-      root.removeEventListener('pointerdown', resume);
-      root.removeEventListener('keydown', resume);
-    };
-    root.addEventListener('pointerdown', resume, { once: true });
-    root.addEventListener('keydown', resume, { once: true });
-  }
+  /* ── Helpers ── */
 
-  setVolume(v) {
-    this.volume = Math.max(0, Math.min(1, v));
-    if (this.master) this.master.gain.setTargetAtTime(this.volume, this._now(), 0.01);
-  }
-
-  _now() { return (this.ctx && this.ctx.currentTime) ? this.ctx.currentTime : 0; }
-
-  _makeOsc(type, freq) {
-    const o = this.ctx.createOscillator();
+  function makeOsc(type, freq) {
+    const o = ctx.createOscillator();
     o.type = type;
     o.frequency.value = freq;
     return o;
   }
 
-  _makeGain() { return this.ctx.createGain(); }
+  function makeGain(val) {
+    const g = ctx.createGain();
+    g.gain.value = val != null ? val : 1;
+    return g;
+  }
 
-  _noiseBufferCreate() {
-    if (this._noiseBuffer) return this._noiseBuffer;
-    const sr = this.ctx.sampleRate;
-    const len = sr * 1.0; // 1s buffer
-    const buf = this.ctx.createBuffer(1, len, sr);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
-    this._noiseBuffer = buf;
+  function noiseBuffer() {
+    if (_noiseBuffer) return _noiseBuffer;
+    const sr = ctx.sampleRate;
+    const len = Math.floor(sr * 0.5);
+    const buf = ctx.createBuffer(1, len, sr);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    _noiseBuffer = buf;
     return buf;
   }
 
-  // Gentle desk bell: multiple detuned partials, quick attack, warm decay
-  playBell(opts = {}) {
-    this._init();
-    const now = this._now();
-    const freq = opts.freq || 880; // A5-ish
-    const gain = this._makeGain();
-    gain.gain.value = 0.0001;
-    gain.connect(this.master);
+  /* ── Sounds ── */
 
-    const osc1 = this._makeOsc('sine', freq);
-    const osc2 = this._makeOsc('triangle', freq * 1.997);
-    const osc3 = this._makeOsc('sine', freq * 0.501);
+  /**
+   * Desk bell — bright sine partials, quick attack, warm ring.
+   * Great for: guest check-in, positive result, shop purchase.
+   */
+  function _ding(t, freq) {
+    // Single counter-bell strike: fundamental + metallic partials
+    // + a detuned "rattle" oscillator slightly off-pitch for clanginess.
+    const env = makeGain(0);
 
-    osc1.connect(gain);
-    osc2.connect(gain);
-    osc3.connect(gain);
+    // WaveShaper for mild clipping — gives the rattly metallic bite
+    const shaper = ctx.createWaveShaper();
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) {
+      const x = (i * 2) / 256 - 1;
+      curve[i] = (Math.PI + 60) * x / (Math.PI + 60 * Math.abs(x)); // soft clip
+    }
+    shaper.curve = curve;
+    shaper.oversample = '4x';
 
-    const attack = 0.002;
-    const decay = 1.4;
-    gain.gain.cancelScheduledValues(now);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.linearRampToValueAtTime(0.9, now + attack);
-    gain.gain.exponentialRampToValueAtTime(0.0002, now + decay);
+    env.connect(shaper);
+    shaper.connect(master);
 
-    const stopTime = now + decay + 0.1;
+    const o1 = makeOsc('sine',     freq);           // fundamental
+    const o2 = makeOsc('sine',     freq * 2.756);   // metallic partial
+    const o3 = makeOsc('triangle', freq * 5.405);   // high shimmer
+    const o4 = makeOsc('sine',     freq * 1.0083);  // barely detuned rattle twin
 
-    osc1.start(now);
-    osc2.start(now);
-    osc3.start(now);
-    osc1.stop(stopTime);
-    osc2.stop(stopTime);
-    osc3.stop(stopTime);
+    const m1 = makeGain(0.60); o1.connect(m1); m1.connect(env);
+    const m2 = makeGain(0.20); o2.connect(m2); m2.connect(env);
+    const m3 = makeGain(0.06); o3.connect(m3); m3.connect(env);
+    const m4 = makeGain(0.18); o4.connect(m4); m4.connect(env); // beating rattle
+
+    const crack  = t + 0.001;
+    const settle = t + 0.018;
+    const ring   = t + 1.1;
+    const tail   = ring + 0.04; // ramp to silence before stop — prevents click
+    env.gain.setValueAtTime(0,      t);
+    env.gain.linearRampToValueAtTime(0.65,  crack);
+    env.gain.exponentialRampToValueAtTime(0.16, settle);
+    env.gain.exponentialRampToValueAtTime(0.0001, ring);
+    env.gain.linearRampToValueAtTime(0, tail);
+
+    [o1, o2, o3, o4].forEach(function (o) { o.start(t); o.stop(tail + 0.01); });
   }
 
-  // Soft ghost: low pad with pitch glide and filtered noise
-  playGhost(opts = {}) {
-    this._init();
-    const now = this._now();
-    const base = opts.freq || 160;
-    const gain = this._makeGain();
-    gain.gain.value = 0.0001;
-    gain.connect(this.master);
-
-    const osc = this._makeOsc('sine', base * 1.0);
-    const osc2 = this._makeOsc('sine', base * 1.001);
-    osc.connect(gain);
-    osc2.connect(gain);
-
-    // bandpass to give breathy character
-    const bp = this.ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = 420;
-    bp.Q.value = 0.7;
-    gain.disconnect(this.master);
-    gain.connect(bp);
-    bp.connect(this.master);
-
-    // LFO for subtle pitch wobble
-    const lfo = this._makeOsc('sine', 0.6);
-    const lfoGain = this.ctx.createGain();
-    lfoGain.gain.value = 6; // small modulation
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc.frequency);
-    lfoGain.connect(osc2.frequency);
-
-    const attack = 0.12;
-    const release = 1.8;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.linearRampToValueAtTime(0.35, now + attack);
-    gain.gain.exponentialRampToValueAtTime(0.0003, now + attack + release);
-
-    osc.start(now);
-    osc2.start(now);
-    lfo.start(now);
-
-    osc.stop(now + attack + release + 0.1);
-    osc2.stop(now + attack + release + 0.1);
-    lfo.stop(now + attack + release + 0.1);
+  function playBell(opts) {
+    opts = opts || {};
+    ready().then(function () {
+      const freq = opts.freq || 2637; // E7 — high, bright counter bell
+      const t = now();
+      _ding(t, freq);
+      _ding(t + 0.18, freq); // same pitch both hits — pure ding-ding
+    }).catch(function () {});
   }
 
-  // Small UI tick/click: short percussive transient
-  playTick(opts = {}) {
-    this._init();
-    const now = this._now();
-    const gain = this._makeGain();
-    gain.gain.value = 0.0001;
-    gain.connect(this.master);
+  /**
+   * Ghost whisper — slow-attack eerie sine pad with a wobble LFO.
+   * Great for: ghost interactions, haunt events.
+   */
+  function playGhost(opts) {
+    opts = opts || {};
+    ready().then(function () {
+      const t = now();
+      const base = opts.freq || 196;
 
-    // small noise burst
-    const buf = this._noiseBufferCreate();
-    const src = this.ctx.createBufferSource();
-    src.buffer = buf;
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.value = 1200;
-    src.connect(filter);
-    filter.connect(gain);
+      const env = makeGain(0);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 520;
+      bp.Q.value = 1.2;
+      env.connect(bp);
+      bp.connect(master);
 
-    const attack = 0.001;
-    const decay = 0.06;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.linearRampToValueAtTime(0.9, now + attack);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + attack + decay);
+      const o1 = makeOsc('sine', base);
+      const o2 = makeOsc('sine', base * 1.503);
+      o1.connect(env);
+      o2.connect(env);
 
-    src.start(now);
-    src.stop(now + attack + decay + 0.02);
+      const lfo = makeOsc('sine', 0.45);
+      const lfoAmt = makeGain(4);
+      lfo.connect(lfoAmt);
+      lfoAmt.connect(o1.frequency);
+      lfoAmt.connect(o2.frequency);
+
+      const atk  = t + 0.18;
+      const peak = t + 0.5;
+      const rel  = t + (opts.duration || 2.4);
+      const tail = rel + 0.06;
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.45, atk);
+      env.gain.setValueAtTime(0.45, peak);
+      env.gain.exponentialRampToValueAtTime(0.0001, rel);
+      env.gain.linearRampToValueAtTime(0, tail);
+
+      [o1, o2, lfo].forEach(function (o) { o.start(t); o.stop(tail + 0.01); });
+    }).catch(function () {});
   }
-}
 
-// expose a single instance
-window.AudioFX = new AudioFX();
+  /**
+   * UI tick — crisp, very short noise transient.
+   * Great for: button clicks, nav tab switches, any minor UI feedback.
+   */
+  function playTick(opts) {
+    opts = opts || {};
+    ready().then(function () {
+      const t = now();
 
-// Small helper for convenience (safe defaults)
-window.AudioFXPreview = function(){
-  try { window.AudioFX.playTick(); setTimeout(()=>window.AudioFX.playBell(), 120); } catch(e){}
-};
+      const env = makeGain(0);
+      env.connect(master);
+
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuffer();
+
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = opts.freq || 2400;
+
+      src.connect(hp);
+      hp.connect(env);
+
+      const atk  = t + 0.001;
+      const rel  = t + 0.055;
+      const tail = rel + 0.008;
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.52, atk);
+      env.gain.exponentialRampToValueAtTime(0.0001, rel);
+      env.gain.linearRampToValueAtTime(0, tail);
+
+      src.start(t);
+      src.stop(tail + 0.005);
+    }).catch(function () {});
+  }
+
+  /**
+   * Soft error buzz — low, short sawtooth pulse.
+   * Great for: failed actions, insufficient funds, negative results.
+   */
+  function playBuzz(opts) {
+    opts = opts || {};
+    ready().then(function () {
+      const t = now();
+
+      const env = makeGain(0);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 320;
+      env.connect(lp);
+      lp.connect(master);
+
+      const o = makeOsc('sawtooth', opts.freq || 120);
+      o.connect(env);
+
+      const rel  = t + 0.18;
+      const tail = rel + 0.015;
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(0.32, t + 0.01);
+      env.gain.exponentialRampToValueAtTime(0.0001, rel);
+      env.gain.linearRampToValueAtTime(0, tail);
+
+      o.start(t);
+      o.stop(tail + 0.005);
+    }).catch(function () {});
+  }
+
+  /* ── Public API ── */
+
+  function setVolume(v) {
+    _vol = Math.max(0, Math.min(1, v));
+    if (master) master.gain.setTargetAtTime(_vol, ctx.currentTime, 0.02);
+  }
+
+  window.AudioFX = {
+    playBell:  playBell,
+    playGhost: playGhost,
+    playTick:  playTick,
+    playBuzz:  playBuzz,
+    setVolume: setVolume,
+    get ctx() { return ctx; }
+  };
+
+})();

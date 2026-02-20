@@ -1629,6 +1629,7 @@ function carryBags(id) {
   const g = G.guests.find(x=>x.name===guest.name);
   if (g) g.happiness = Math.min(100, g.happiness + 12);
   const gained = earn(5); addXP(2);
+  if (window.AudioFX) window.AudioFX.playBell();
   showResult(
     '<strong>'+guest.name+'</strong> arrives at the front entrance with considerably more luggage than expected.<br><br>You carry every bag without comment. They notice.',
     'good',
@@ -1664,6 +1665,7 @@ function processCheckIn(id) {
   const g = G.guests.find(x=>x.name===guest.name);
   if (g) g.happiness = Math.min(100, g.happiness + 8);
   addXP(2); const gained = earn(3);
+  if (window.AudioFX) window.AudioFX.playBell();
   showResult(
     'You process <strong>'+guest.name+'</strong>\'s reservation, confirm their room, and dispatch a bellhop with their luggage. Professional. Efficient. Exactly right.',
     'good',
@@ -1716,6 +1718,7 @@ function fulfillRequest(id) {
   const gained = earn(r);
   g.happiness = Math.min(100, g.happiness+15);
   changeRep(4); addXP(2);
+  if (window.AudioFX) window.AudioFX.playBell({ freq: 660, decay: 1.2 });
   log('Fulfilled '+g.name+'\'s request. +'+fmt(r)+'.','good');
   showResult('<strong>'+g.name+'</strong> gets what they asked for.<br><br><em>"'+g.request+'."</em><br><br>They look genuinely pleased, which at The Bellmore you do not take for granted.','good',[{label:'+'+fmt(r),pos:true},{label:'+15% Mood',pos:true},{label:'+4 Rating',pos:true}]);
   renderAll();
@@ -1753,6 +1756,7 @@ function interactGhost(id) {
   g.mood = Math.min(100, g.mood+boost);
   addXP(1);
   const line = g.sootheLine[Math.floor(Math.random()*g.sootheLine.length)];
+  if (window.AudioFX) window.AudioFX.playGhost();
   log('Tended to '+g.name+'. Mood improved.','ghost');
   showResult(line,'ghost',[{label:'+'+boost+' Mood',pos:true},{label:'+1 XP',pos:true}]);
   renderAll();
@@ -1798,6 +1802,7 @@ function completeTask(id) {
   if (!canAffordAction(taskUnits)) { showResult('You need at least '+unitsLabel(taskUnits+OVERHEAD_MAX_UNITS)+' to complete this task.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
   const taskCost = chargeAction(taskUnits);
   t.done = true; earn(2); addXP(t.xp);
+  if (window.AudioFX) window.AudioFX.playTick();
   log('Completed: "'+t.title+'"','good');
   renderAll();
 }
@@ -2253,6 +2258,7 @@ function renderAll() {
 // NAV
 // ────────────────────────────────────────────
 function sv(name) {
+  if (window.AudioFX) window.AudioFX.playTick();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
@@ -2264,25 +2270,5 @@ introControlsRender();
 
 </script>
 <script src="tools/audio.js"></script>
-<script>window.AudioFX && window.AudioFX.resumeOnUserGesture(document);</script>
-<script>
-  (function(){
-    if (!window.AudioFX) return;
-    const handle = () => {
-      try {
-        if (window.AudioFX.ctx && window.AudioFX.ctx.state === 'suspended') {
-          window.AudioFX.ctx.resume().catch(()=>{});
-        }
-        // gentle preview so user knows audio is enabled
-        window.AudioFX.setVolume(0.35);
-        window.AudioFX.playTick();
-      } catch(e){}
-      document.removeEventListener('pointerdown', handle);
-      document.removeEventListener('keydown', handle);
-    };
-    document.addEventListener('pointerdown', handle);
-    document.addEventListener('keydown', handle);
-  })();
-</script>
 </body>
 </html>
