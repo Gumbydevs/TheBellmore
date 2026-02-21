@@ -1330,9 +1330,9 @@ function continueGame() {
   const ok = loadGame();
   if (ok) {
     document.getElementById('introScreen').classList.add('hidden');
+    if (window.AudioFX) window.AudioFX.musicStart();
     renderAll();
   } else {
-    // fallback to new game
     startGame();
   }
 }
@@ -1389,6 +1389,7 @@ function startGame() {
   log('Day 1. You arrive at The Bellmore for your first shift as Bellhop.', 'neutral');
   log('The lobby smells of old wood, lavender, and something else entirely.', 'ghost');
   document.getElementById('introScreen').classList.add('hidden');
+  if (window.AudioFX) window.AudioFX.musicStart();
   renderAll();
   // No event day 1 — let the player settle in
 }
@@ -1961,6 +1962,7 @@ function advanceDay() {
 // GAME OVER
 // ────────────────────────────────────────────
 function gameOver(cause) {
+  if (window.AudioFX) window.AudioFX.musicStop();
   const isOwner = owned('buyhotel');
   let headline, msg;
 
