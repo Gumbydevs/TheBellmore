@@ -116,13 +116,26 @@
       background: var(--paper);
     }
 
-    .sidebar-art {
-      display: block;
+    .sidebar-art-wrap {
       width: 100%;
+      height: 270px;
+      overflow: hidden;
       border-radius: 6px;
       margin-bottom: 14px;
       border: 1px solid var(--gold);
-      opacity: .9;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(201,168,76,.15);
+    }
+
+    .sidebar-art {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center top;
+      opacity: .95;
+      transform: scale(1.10);
+      transform-origin: center top;
     }
 
     .hotel-name {
@@ -767,7 +780,9 @@
 <!-- HEADER -->
 <div class="hotel-header">
   <div class="hotel-name">The Bellmore</div>
-  <img src="BellmoreHotel.png" alt="The Bellmore" class="sidebar-art">
+  <div class="sidebar-art-wrap">
+    <img src="BellmoreHotel.png" alt="The Bellmore" class="sidebar-art">
+  </div>
   <div class="hotel-sub">Portland, Oregon · Est. 1887</div>
   <div class="star-row">
     <div class="stars" id="starDisplay"></div>
