@@ -1149,7 +1149,7 @@ const ghostUnlockPool = [
     ignoreLine:['Every light on Floor 4 dims simultaneously for about four seconds.','You find a small wet footprint on the carpet. Just one. You look both ways down the hall.','Cole appears briefly at the end of the corridor and then is not there. He looked lonely.'],
   },
   {
-    name:'Silas Colt', room:8, era:'1880s', unlockDay:11, interactVerb:'Hear Him Out',
+    name:'Silas Colt', room:8, era:'1880s', unlockDay:11, interactVerb:'Hear Him Out', prefersSolitude:true,
     desc:'Drifted into Portland in 1882, checked in under a false name, and never checked out. His spurs leave no marks. His poker face is still perfect.',
     mood:50, want:'A fair game and someone to call him by his real name',
     backstory:'Nobody knew his real name when he was alive and the name he used is on a wanted poster in three territories. He came to The Bellmore to disappear, and in a manner of speaking it worked. He died in his room during a card game under disputed circumstances. He still plays most nights. The cards are always there in the morning, spread on the table in Room 8, mid hand. Nobody has ever seen who he plays against.',
@@ -1205,7 +1205,7 @@ const ghostUnlockPool = [
     ignoreLine:['The door to Room 17 sticks. Not jammed. Reluctant.','You find the word "NOTE" scratched very finely into the dust on the Room 17 windowsill.','Nothing aggressive. Professor Finch is a patient man. He simply needs you to look in the right drawer.'],
   },
   {
-    name:'Isaiah Crane', room:4, era:'1890s', unlockDay:16, interactVerb:'Watch the River',
+    name:'Isaiah Crane', room:4, era:'1890s', unlockDay:16, interactVerb:'Watch the River', prefersSolitude:true,
     desc:'Dockworker from the 1894 flood. The Willamette reached 33.5 feet that June, submerging 250 city blocks. Isaiah was working the docks when the water came.',
     mood:45, want:'Someone to know what the water took',
     backstory:'The Great Flood of 1894 was the worst in Portland\'s recorded history. The Willamette reached 33.5 feet — its highest mark ever — and swallowed 250 downtown blocks whole. Two drawbridges stuck open, splitting the city for days. Isaiah Crane was a dockworker on the Willamette waterfront when the river came over the banks on June 6th. He was thirty-one years old. He has been in Room 4 ever since, and on certain mornings the carpet near the window is inexplicably damp.',
@@ -1221,7 +1221,7 @@ const ghostUnlockPool = [
     ignoreLine:['Room 20 is dark when it should not be. The bulb is fine.','Nothing happens in Room 20. This is its own kind of heaviness.','Calvin is quiet. He has always been quiet. That was never the problem.'],
   },
   {
-    name:'Thomas Cray', room:1, era:'1880s', unlockDay:33, interactVerb:'Open the Cellar Door',
+    name:'Thomas Cray', room:1, era:'1880s', unlockDay:33, interactVerb:'Open the Cellar Door', prefersSolitude:true,
     desc:'Vanished from a waterfront saloon in 1887. Portland earned the name "Forbidden City of the West" in that era — whether the tunnels beneath Old Town were truly used for shanghaiing is still debated by historians. Thomas does not remember. He only knows he woke up somewhere else and could not find his way back.',
     mood:35, want:'To know what actually happened to him',
     backstory:'Portland in the 1880s was a rough port city — saloons, crimps, and a waterfront economy built on ships that always needed crews. The tunnels beneath Old Town connected hotel basements to the Willamette docks, used officially for moving cargo out of the rain. Thomas Cray came in from eastern Oregon in the autumn of 1887, stopped at a waterfront tavern, and was never seen again. What happened in the hours between the tavern and wherever he woke up is genuinely unclear — historians have found no evidence the tunnels were systematically used for abduction, but men did vanish, ships did sail short-crewed, and Portland did earn its reputation. Thomas has been in Room 1 since the building was new. He is not angry. He is confused, which is in some ways harder to sit with.',
@@ -1766,27 +1766,45 @@ function interactGhost(id) {
 
 function leaveAlone(id) {
   const g = G.ghosts.find(x=>x.id===id);
-  if (!g) return;
-  // Mixed outcomes — not always bad
-  const roll = Math.random();
+  if (!g || g.interactedToday) return;
+  g.interactedToday = true; // deliberate choice — prevents double-penalty at end of turn
   const line = g.ignoreLine ? g.ignoreLine[Math.floor(Math.random()*g.ignoreLine.length)] : 'You give them space. The hotel settles quietly.';
-  if (roll < 0.35) {
-    // Bad outcome
-    g.mood = Math.max(0, g.mood-10);
-    changeRep(-2,'a permanent resident took exception to being ignored');
-    log('Left '+g.name+' alone. They did not take it well.','bad');
-    showResult(line,'bad',[{label:'-10 Mood',neg:true},{label:'-2 Rating',neg:true}]);
-  } else if (roll < 0.7) {
-    // Neutral — nothing happens
-    log('Left '+g.name+' alone. Quiet night on that floor.','neutral');
-    showResult(line,'neutral',[{label:'No Change'}]);
+  if (g.prefersSolitude) {
+    // Solitude-preferring ghosts always react positively to being left alone
+    g.mood = Math.min(100, g.mood+8);
+    log('Left '+g.name+' alone. They preferred it that way.','ghost');
+    showResult(line,'ghost',[{label:'+8 Mood',pos:true}]);
   } else {
-    // Good — some ghosts appreciate being left to their own business
-    g.mood = Math.min(100, g.mood+5);
-    log('Left '+g.name+' alone. They seemed to appreciate it.','ghost');
-    showResult(line,'ghost',[{label:'+5 Mood',pos:true}]);
+    // Mixed outcomes for social ghosts — not always bad
+    const roll = Math.random();
+    if (roll < 0.35) {
+      g.mood = Math.max(0, g.mood-10);
+      changeRep(-2,'a permanent resident took exception to being ignored');
+      log('Left '+g.name+' alone. They did not take it well.','bad');
+      showResult(line,'bad',[{label:'-10 Mood',neg:true},{label:'-2 Rating',neg:true}]);
+    } else if (roll < 0.7) {
+      log('Left '+g.name+' alone. Quiet night on that floor.','neutral');
+      showResult(line,'neutral',[{label:'No Change'}]);
+    } else {
+      g.mood = Math.min(100, g.mood+5);
+      log('Left '+g.name+' alone. They seemed to appreciate it.','ghost');
+      showResult(line,'ghost',[{label:'+5 Mood',pos:true}]);
+    }
   }
   renderAll();
+}
+
+function autoNeglectGhost(g) {
+  // Solitude-preferring ghosts are fine being left alone — no penalty.
+  if (g.prefersSolitude) {
+    g.mood = Math.min(100, g.mood+5);
+    log(g.name+' was left undisturbed. They preferred it.','ghost');
+    return;
+  }
+  // All other ghosts expect attention.
+  g.mood = Math.max(0, g.mood - 10);
+  changeRep(-2, g.name+' was neglected overnight');
+  log(g.name+' was neglected — no one attended to them today.','bad');
 }
 
 function ghostHistory(id) {
@@ -1860,6 +1878,9 @@ function advanceDay() {
     const revenue = earn(revenueBase);
     log('Hotel revenue: +'+fmt(revenueBase)+' from overnight operations.','good');
   }
+
+  // Auto-neglect: any ghost not tended to or deliberately left alone gets end-of-turn penalty
+  G.ghosts.forEach(gh=>{ if (!gh.interactedToday) autoNeglectGhost(gh); });
 
   // Ghost mood effects — always drift down, only tending slows it
   G.ghosts.forEach(gh=>{
@@ -2194,7 +2215,7 @@ function renderAll() {
       <div class="mood-row" style="margin-top:8px"><span class="mood-label">Mood</span><div class="mood-track"><div class="mood-fill" style="width:${g.mood}%;background:${mc}"></div></div><span class="mood-pct" style="color:${mc}">${g.mood}%</span></div>
       <div class="card-actions">
         <button class="btn btn-ghost" onclick="interactGhost(${g.id})" ${canInteract?'':'disabled'}>${g.interactedToday?'Done Today':verb} ${canInteract?'<span class="cost-badge">'+unitsLabel(ACTION_BASE_UNITS.ghost+OVERHEAD_MAX_UNITS)+'</span>':''}</button>
-        <button class="btn btn-dim" onclick="leaveAlone(${g.id})">Leave Be</button>
+        ${!g.interactedToday ? '<button class="btn btn-dim" onclick="leaveAlone('+g.id+')">Leave Be</button>' : ''}
         <button class="btn btn-dim" style="flex:0;min-width:64px;text-align:center;padding:7px 8px" onclick="ghostHistory(${g.id})">History</button>
       </div></div>`;
   }).join('');
