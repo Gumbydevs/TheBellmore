@@ -929,7 +929,7 @@ const upgradeDefs = [
   { id:'flowers', name:'Fresh Lobby Flowers', cost:20, desc:'A better first impression. +4 hotel rating at the start of each day.' },
   { id:'tipjar', name:'Tip Jar at Front Desk', cost:30, desc:'Happy checkouts leave more. +$6 per satisfied guest checkout.' },
   { id:'incense', name:'Incense for Room 7', cost:25, desc:'Agnes appreciates it. Her mood starts each day 15 points higher.' },
-  { id:'passkey', name:'The Master Passkey', cost:40, desc:'Unlocks Room 12. Something is in there.' },
+  { id:'passkey', name:'The Master Passkey', cost:40, desc:'Unlocks Room 12. Reginald Forthwick has been waiting. Something else has too.' },
   { id:'press', name:'Local Press Contact', cost:50, desc:'Bad reviews hit 50% softer. Someone at the Oregonian owes you.' },
   { id:'auditor', name:'Hire a Night Auditor', cost:60, desc:'Incomplete tasks no longer cost hotel rating overnight.' },
   { id:'bellcart', name:'New Bell Cart', cost:35, desc:'Checking in guests costs 0 hours instead of 1. First impressions, faster.' },
@@ -1026,30 +1026,35 @@ const eventPool = [
     { text:'Stall her in the lobby for fifteen minutes', hint:'Buys time to prepare', res:'You stall brilliantly. The kitchen is presentable when she arrives. Clean report. Management thanks you later.', fx:{rep:5,tips:5,xp:1} },
     { text:'Let her go wherever she likes', hint:'Could go either way', res:'She finds a playing card, seven of hearts, on the prep counter. She photographs it, marks it as a hygiene concern, and leaves with a deeply puzzled expression.', fx:{rep:-6,xp:0} },
   ]},
-  { id:'e9', title:'The Wheel', body:'The pottery wheel in the lobby art display — the one that has been a static decorative piece since 1994 — is spinning. Slowly. With wet clay on it that was not there before. A couple on their honeymoon is standing in front of it, completely still, holding hands. Nobody has touched the wheel.', choices:[
+  { id:'e9', minDay:10, title:'The Wheel', body:'The pottery wheel in the lobby art display — the one that has been a static decorative piece since 1994 — is spinning. Slowly. With wet clay on it that was not there before. A couple on their honeymoon is standing in front of it, completely still, holding hands. Nobody has touched the wheel.', choices:[
     { text:'Dim the lobby lights and say nothing', hint:'Let the moment happen', res:'You dim the lights and step back. The clay rises slowly on the wheel — no hands visible, but shaped deliberately, unmistakably. The couple stands watching for eleven minutes. They tip you $80 at checkout and request the same room next anniversary.', fx:{rep:10,tips:80,xp:3} },
     { text:'Call it a malfunction and apologize', hint:'Safest story. Ruins it completely.', res:'"Hydraulic display feature." You say it with total conviction. The wheel slows and stops. The clay collapses. The couple looks deeply disappointed. You have broken something that was not yours to break.', fx:{rep:-3,xp:0} },
     { text:'Ask the couple if they would like to sit down at it', hint:'Some things should be experienced properly', res:'They sit. The clay moves beneath their hands in a way that cannot be explained. Nobody speaks. When it is over the woman is crying. The man says quietly: "I felt someone else\'s hands." You go back to the desk and do not speak of it.', fx:{rep:8,tips:60,xp:4} },
   ]},
-  { id:'e10', title:'The Water Mark', body:'There is a waterline on the lobby wall. Faint, horizontal, about four feet up — the kind left by a flood. No flood has touched this building. The line was not there yesterday. A guest who grew up in Portland has gone very quiet looking at it.', choices:[
+  { id:'e10', minDay:8, title:'The Water Mark', body:'There is a waterline on the lobby wall. Faint, horizontal, about four feet up — the kind left by a flood. No flood has touched this building. The line was not there yesterday. A guest who grew up in Portland has gone very quiet looking at it.', choices:[
     { text:'Tell her what you know about the 1894 flood', hint:'The Willamette reached 33.5 feet downtown that year. 250 blocks submerged.', res:'She listens carefully. Then she says: "My great-grandmother lost everything on Front Street that summer." She stands at the mark for a long time. She leaves a large tip and a handwritten note: "Thank you for knowing."', fx:{rep:7,tips:45,xp:3} },
     { text:'Paint over it before other guests see', hint:'Clean and fast', res:'You paint over it before breakfast. By afternoon it has reappeared, exactly as before, at exactly the same height. You do not paint over it again.', fx:{rep:0,xp:1} },
     { text:'Photograph it and say nothing', hint:'Document first', res:'The photograph shows only a clean wall. The line is visible in the room. This is useful information, somehow.', fx:{rep:2,xp:2} },
   ]},
-  { id:'e11', title:'The Man Who Came From Vanport', body:'A guest found an old photograph tucked behind the mirror in Room 20. Black and white. A man in work clothes standing in front of a row of identical houses, smiling. On the back, in careful handwriting: "Vanport, May 1948." The guest wants to know who he is.', choices:[
+  { id:'e11', minDay:12, title:'The Man Who Came From Vanport', body:'A guest found an old photograph tucked behind the mirror in Room 20. Black and white. A man in work clothes standing in front of a row of identical houses, smiling. On the back, in careful handwriting: "Vanport, May 1948." The guest wants to know who he is.', choices:[
     { text:'Tell them the history of Vanport', hint:'Built for Kaiser Shipyard workers in WWII. On Memorial Day 1948, the dike broke at 4:17pm. The city of 18,000 was underwater by nightfall.', res:'The guest listens to all of it. They ask if any residents ended up at The Bellmore. You say you think some of them must have. There is a long silence. Later that night, the smell of fresh timber and river water fills Room 20 briefly, and then is gone.', fx:{rep:6,tips:20,xp:3} },
     { text:'Return the photograph to the front desk lost and found', hint:'Protocol. Nothing more.', res:'The photograph stays in the lost and found. Nobody claims it. By next week it will be in the drawer with the unclaimed keys. This feels like the wrong ending.', fx:{rep:1,xp:0} },
     { text:'Leave the photograph where it was found', hint:'Some things belong where they are', res:'You put it back behind the mirror. That night the light in Room 20 pulses once, warm and brief, like something finally acknowledged. In the morning the photograph is gone.', fx:{rep:4,xp:2,tips:10} },
   ]},
-  { id:'e12', title:'What Came Up From Below', body:'During a plumbing repair, workers broke through to a brick-lined passage beneath the hotel basement. Old construction — mid 1800s Portland, waterfront era. One worker refuses to go back down. He says there is a cell carved into the wall with iron rings still bolted into the stone. He says something is still in there.', choices:[
+  { id:'e12', minDay:15, title:'What Came Up From Below', body:'During a plumbing repair, workers broke through to a brick-lined passage beneath the hotel basement. Old construction — mid 1800s Portland, waterfront era. One worker refuses to go back down. He says there is a cell carved into the wall with iron rings still bolted into the stone. He says something is still in there.', choices:[
     { text:'Seal it immediately, no documentation', hint:'What guests do not know cannot hurt bookings', res:'The passage is sealed by end of day. Nobody asks questions. That night every door in the building opens simultaneously at 3am and closes again. Management files it as a pressure event.', fx:{rep:0,xp:1} },
     { text:'Contact a Portland historian before doing anything', hint:'The Shanghai tunnel network beneath Old Town Portland dates to the 1850s. Whether it was used for shanghaiing is disputed — but the tunnels are real.', res:'The historian arrives within the hour. She confirms the passage is genuine 1850s construction and likely connected to the Old Town waterfront network. She writes about it. The Bellmore receives a heritage designation application within a month.', fx:{rep:12,xp:3} },
     { text:'Go down yourself', hint:'You will regret this or you will not', res:'The passage is cold and smells of river water and something older. The cell is real. The iron rings are worn smooth in a specific way. You come back up and sit quietly at the desk for a while before your shift continues.', fx:{rep:3,xp:4} },
   ]},
-  { id:'e13', title:'The Columbus Day Storm', body:'October 12. The weather service has issued a severe wind warning. The barometer is dropping in a way that makes the older staff nervous. One of the long-timers says only: "I was here in \'62." In 1962, the Columbus Day Storm hit downtown Portland at 116 miles per hour and killed 38 people across Oregon. The oldest guests are checking the sky.', choices:[
+  { id:'e13', minDay:10, title:'The Columbus Day Storm', body:'October 12. The weather service has issued a severe wind warning. The barometer is dropping in a way that makes the older staff nervous. One of the long-timers says only: "I was here in \'62." In 1962, the Columbus Day Storm hit downtown Portland at 116 miles per hour and killed 38 people across Oregon. The oldest guests are checking the sky.', choices:[
     { text:'Secure the building and brief all staff', hint:'The right call. Always.', res:'Windows latched, loose items brought in, staff briefed on procedure. The storm arrives hard and fast. The Bellmore holds. Three neighboring businesses lose signage. One guest calls it "the most prepared hotel I have ever sheltered in." Five stars.', fx:{rep:9,xp:2} },
     { text:'Reassure guests that modern forecasting is much better now', hint:'Partially true', res:'The storm is bad but not catastrophic. Most guests take your word for it. One does not, checks out before the rain starts, and misses the worst of it by exactly twenty minutes.', fx:{rep:3,xp:1} },
     { text:'Ask the long-timer what 1962 was actually like', hint:'Some history should be heard directly', res:'She tells you about the trees coming down, the power out for days, a silence afterward that felt wrong. "The building groaned," she says. "Like it was deciding." She looks at the ceiling. "It decided to stay." Tonight it holds again.', fx:{rep:5,tips:15,xp:2} },
+  ]},
+  { id:'e14', minDay:5, needsPasskey:true, title:'What Reginald Left Behind', body:'With the master passkey in hand, you finally open Room 12 properly. Inside: every piece of furniture is arranged for a formal dinner service — eight place settings, crystal glasses, silver that should not exist in this building. Reginald is not visible. But the room is very cold, and the chair at the head of the table has been pulled out.', choices:[
+    { text:'Sit down at the table', hint:'You have the passkey. You have the right.', res:'You sit. The room is quiet for a long moment. Then, slowly, the silver nearest you slides a fraction of an inch — and holds. Reginald, somewhere in the room, has acknowledged you. His mood has lifted noticeably. The cold lifts too.', fx:{rep:5,gm:['Reginald Forthwick',20],xp:3} },
+    { text:'Set the table properly before leaving', hint:'Correct the one thing out of place', res:'You notice a fish fork on the wrong side. You move it. The temperature in the room rises several degrees immediately. You can hear, very faintly, what sounds like approval. This is the most surreal thing you have done at this job.', fx:{rep:4,gm:['Reginald Forthwick',15],xp:2} },
+    { text:'Document the room and lock it again', hint:'Some things should be on the record', res:'You photograph the settings, log the incident, and re-lock the door. Reginald rattles a distant pipe once. Displeasure noted.', fx:{rep:2,gm:['Reginald Forthwick',-5],xp:1} },
   ]},
 ];
 
@@ -1089,6 +1094,9 @@ const taskPool = [
   { t:'A journalist wants a statement about the hotel\'s history. As owner, this is your call.', xp:3, needsOwner:true },
   { t:'Staff payroll needs your signature. Welcome to ownership.', xp:2, needsOwner:true },
   { t:'A Portland preservation society wants to landmark the building. Respond as owner.', xp:3, needsOwner:true },
+  { t:'Room 12 has been rearranged again overnight. With the passkey, you can at least get in to set it right.', xp:2, needsPasskey:true },
+  { t:'The place settings in Room 12 were found disturbed. Reginald expects them corrected before guests notice.', xp:2, needsPasskey:true },
+  { t:'Something was left outside Room 12 overnight — a folded card, blank, and a single silver fork. Log it.', xp:3, needsPasskey:true },
 ];
 
 const ghostUnlockPool = [
@@ -1213,7 +1221,7 @@ const ghostUnlockPool = [
     ignoreLine:['Room 4 is cold in a way that has nothing to do with the temperature.','A wet handprint appears briefly on the window of Room 4, facing inward. It fades in under a minute.','Nothing. Isaiah Crane has had decades to get used to being overlooked.'],
   },
   {
-    name:'Calvin Dubois', room:20, era:'1940s', unlockDay:20, interactVerb:'Sit With Him',
+    name:'Calvin Dubois', room:21, era:'1940s', unlockDay:20, interactVerb:'Sit With Him',
     desc:'Shipyard worker from Vanport. Came from Louisiana on a wartime labor train in 1943. Built Liberty Ships for Kaiser. Was home on Memorial Day 1948 when the dike broke.',
     mood:55, want:'Someone to know that Vanport was real',
     backstory:'Vanport was Oregon\'s second-largest city — a wartime housing project built in months for Kaiser Shipyard workers, home to 40,000 at its peak including thousands of African Americans who had come from the South on special labor trains. On Memorial Day 1948, the Housing Authority of Portland distributed leaflets that morning: "Dikes are safe at present. You will be warned if necessary." At 4:17pm the railroad dike broke. By nightfall, a city of 18,000 was gone. Calvin Dubois was in his apartment when the water came through the wall. He ended up at The Bellmore because Portland\'s hotels were among the few places required to take in the displaced. He never found permanent housing. He has been in Room 20 ever since. He keeps to himself. He does not make noise. He only asks that you know what happened.',
@@ -1571,8 +1579,19 @@ function closeResult() { document.getElementById('resultOverlay').classList.add(
 // ────────────────────────────────────────────
 function triggerEvent() {
   if (!G.shuffledEvents) G.shuffledEvents = [...eventPool].sort(()=>Math.random()-.5);
-  const avail = G.shuffledEvents.filter(e=>!G.usedEvents.includes(e.id));
-  if (!avail.length) { G.usedEvents = []; G.shuffledEvents = [...eventPool].sort(()=>Math.random()-.5); return triggerEvent(); }
+  // Filter by availability, not yet used, minDay gate, and passkey requirement
+  const avail = G.shuffledEvents.filter(e =>
+    !G.usedEvents.includes(e.id) &&
+    (!e.minDay || G.day >= e.minDay) &&
+    (!e.minRank || G.rank >= e.minRank) &&
+    (!e.needsPasskey || owned('passkey'))
+  );
+  if (!avail.length) {
+    // Reset used list but keep minDay/minRank gates intact
+    G.usedEvents = [];
+    G.shuffledEvents = [...eventPool].sort(()=>Math.random()-.5);
+    return triggerEvent();
+  }
   G.activeEvent = avail[0];
   G.usedEvents.push(G.activeEvent.id);
   renderAll();
@@ -1785,9 +1804,10 @@ function leaveAlone(id) {
 }
 
 function autoNeglectGhost(g) {
-  // Solitude-preferring ghosts are fine being left alone — no penalty.
+  // Solitude-preferring ghosts are fine being left alone — no penalty, gentle mood boost.
   if (g.prefersSolitude) {
     g.mood = Math.min(100, g.mood+5);
+    g.attendedSolitude = true; // tells the drift loop to use -1 not -6
     log(g.name+' was left undisturbed. They preferred it.','ghost');
     return;
   }
@@ -1841,6 +1861,13 @@ function buyUpgrade(uid) {
       'good',
       [{label:'Owner',pos:true},{label:'5 Stars Unlocked',pos:true},{label:'Revenue Begins Tonight',pos:true}]
     );
+  } else if (uid === 'passkey') {
+    log('The master passkey is in your hand. Room 12 is no longer a question.','ghost');
+    showResult(
+      'The key was in the manager\'s drawer, tagged <em>"Room 12 — Do Not Use."</em><br><br>The tag is old. The handwriting is not anyone currently on staff.<br><br>You put the key in your pocket. Down the corridor, very faintly, you hear what sounds like silver being set on a table.<br><br><em>Reginald knows you have it.</em>',
+      'ghost',
+      [{label:'Room 12 Unlocked',pos:true},{label:'New Tasks Available',pos:true},{label:'Something Is Waiting',pos:true}]
+    );
   } else {
     log('Purchased: '+u.name,'good');
     showResult('<strong>'+u.name+'</strong> installed and active.<br><br>'+u.desc,'good',[{label:'-$'+cost,neg:true},{label:'Active',pos:true}]);
@@ -1855,9 +1882,8 @@ function advanceDay() {
   G.day++;
   G.unitsLeft = SHIFT_UNITS;
 
-  // Reset daily flags
+  // Reset daily guest flags
   G.guests.forEach(g=>{ g.attendedToday = false; g.reqFulfilledToday = false; });
-  G.ghosts.forEach(g=>{ g.interactedToday = false; });
 
   // Lobby flowers upgrade
   if (owned('flowers')) { changeRep(4); log('Lobby flowers: +4 hotel rating.','good'); }
@@ -1869,14 +1895,15 @@ function advanceDay() {
     log('Hotel revenue: +'+fmt(revenueBase)+' from overnight operations.','good');
   }
 
-  // Auto-neglect: any ghost not tended to or deliberately left alone gets end-of-turn penalty
+  // Auto-neglect: fires BEFORE resetting interactedToday so yesterday's actions count
   G.ghosts.forEach(gh=>{ if (!gh.interactedToday) autoNeglectGhost(gh); });
 
-  // Ghost mood effects — always drift down, only tending slows it
+  // Ghost mood drift — tended/solitude-left = -1/night, neglected = -6/night
   G.ghosts.forEach(gh=>{
-    // Drift: tended = -1/night, untended = -6/night. No self-healing.
-    const drift = gh.interactedToday ? -1 : -6;
+    // attendedSolitude is set by autoNeglectGhost for solitude ghosts left undisturbed
+    const drift = (gh.interactedToday || gh.attendedSolitude) ? -1 : -6;
     gh.mood = Math.max(5, Math.min(95, gh.mood + drift));
+    gh.attendedSolitude = false; // clear for next day
     if (owned('incense') && gh.name==='Agnes Bleecker') gh.mood = Math.min(95, gh.mood+10);
 
     if (gh.mood < 30) {
@@ -1893,6 +1920,31 @@ function advanceDay() {
     } else if (gh.mood >= 75) {
       changeRep(2);
       log(gh.name+' was settled overnight.','good');
+    }
+  });
+
+  // Reset ghost daily flags now that all overnight processing is done
+  G.ghosts.forEach(g=>{ g.interactedToday = false; });
+
+  // Guests sharing a room with a ghost — occasional flavor notices
+  const ghostRoomNoticeLines = [
+    (guestName, ghostName) => guestName+' mentioned something odd about their room last night. The furniture had moved, slightly. They did not seem frightened. More puzzled.',
+    (guestName, ghostName) => guestName+' found the room unusually cold when they woke. Left a note at the front desk. The note did not mention '+ghostName+' by name but the description was accurate.',
+    (guestName, ghostName) => 'The guest in '+guestName+'\'s room reported a smell — old perfume, or pipe smoke, or something they could not place. Gone by morning.',
+    (guestName, ghostName) => guestName+' asked if the hotel had a history. You said something noncommittal. They nodded like you had confirmed something.',
+    (guestName, ghostName) => 'Nothing was reported from '+guestName+'\'s room overnight. The silence had a specific quality to it.',
+  ];
+  G.guests.forEach(guest => {
+    const sharedGhost = G.ghosts.find(gh => gh.room === guest.room);
+    if (sharedGhost && Math.random() < 0.3) {
+      const line = ghostRoomNoticeLines[Math.floor(Math.random()*ghostRoomNoticeLines.length)];
+      log(line(guest.name, sharedGhost.name), 'ghost');
+      // Sensitive guests aren't bothered; others lose a little happiness
+      if (guest.tag !== 'sensitive') {
+        guest.happiness = Math.max(0, guest.happiness - 5);
+      } else {
+        guest.happiness = Math.min(100, guest.happiness + 3); // they find it interesting
+      }
     }
   });
 
@@ -1945,7 +1997,8 @@ function advanceDay() {
   if (G.tasks.length < 3) {
     const eligible = taskPool.filter(t =>
       (!t.needsGuests || G.guests.length > 0) &&
-      (!t.needsOwner || owned('buyhotel'))
+      (!t.needsOwner || owned('buyhotel')) &&
+      (!t.needsPasskey || owned('passkey'))
     );
     if (!G.usedTasks) G.usedTasks = [];
     let avail = eligible.filter(t => !G.usedTasks.includes(t.t));
