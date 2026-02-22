@@ -83,6 +83,7 @@
   /* VIEWS */
   .view { display: none; }
   .view.active { display: block; }
+  .sidebar-art { display: none; }
 
   /* ── DESKTOP LAYOUT ── */
   @media (min-width: 700px) {
@@ -113,6 +114,15 @@
       flex-direction: column;
       gap: 0;
       background: var(--paper);
+    }
+
+    .sidebar-art {
+      display: block;
+      width: 100%;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border: 1px solid var(--gold);
+      opacity: .9;
     }
 
     .hotel-name {
@@ -419,8 +429,7 @@
   </div>
   <div id="introControls" style="max-width:300px;width:100%;margin:0 auto;text-align:center">
     <div style="border:2px solid var(--gold);border-radius:8px;overflow:hidden;box-shadow:0 0 40px rgba(201,168,76,.2),0 0 80px rgba(201,168,76,.08)">
-      <!-- The Bellmore — Victorian hotel illustration -->
-      <svg viewBox="0 0 200 150" width="100%" style="display:block;image-rendering:pixelated;background:#06040d" xmlns="http://www.w3.org/2000/svg">
+      <img src="BellmoreHotel.png" alt="The Bellmore Hotel" style="display:block;width:100%">
 
         <!-- SKY — deep purple-black night -->
         <rect width="200" height="150" fill="#06040d"/>
@@ -722,11 +731,7 @@
         <!-- GROUND AND MIST -->
         <rect x="0"   y="110" width="200" height="40" fill="#060402"/>
         <rect x="0"   y="108" width="200" height="4"  fill="#0c0806" opacity=".9"/>
-        <rect x="0"   y="104" width="70"  height="4"  fill="#120e08" opacity=".5"/>
-        <rect x="130" y="105" width="70" height="3"  fill="#120e08" opacity=".45"/>
-        <rect x="40"  y="106" width="120" height="2"  fill="#120e08" opacity=".3"/>
 
-      </svg>
       <!-- Button label area (controls below) -->
       <div style="padding:12px 0;background:linear-gradient(180deg,#1f1508,#181006);border-top:1px solid var(--gold);font-family:'Playfair Display',serif;font-size:15px;letter-spacing:4px;color:var(--gold-bright);text-align:center">
         <div id="introBtnRow" style="display:flex;gap:8px;justify-content:center;padding:6px 12px">
@@ -761,6 +766,7 @@
 
 <!-- HEADER -->
 <div class="hotel-header">
+  <img src="BellmoreHotel.png" alt="The Bellmore" class="sidebar-art">
   <div class="hotel-name">The Bellmore</div>
   <div class="hotel-sub">Portland, Oregon · Est. 1887</div>
   <div class="star-row">
