@@ -310,6 +310,17 @@
     .no-time-banner {
       margin: 0 24px 12px;
     }
+
+    /* End day button stays in right column on desktop */
+    #endDayButtonWrap {
+      grid-column: 2;
+      position: sticky;
+      bottom: 0;
+      padding: 12px 24px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+    }
   }
 
   @media (min-width: 700px) and (min-height: 700px) {
@@ -840,14 +851,17 @@
     <div class="sec-title">Today's Log</div>
     <div id="todayLog"></div>
   </div>
-  <div style="padding:4px 16px 14px">
-    <button class="btn btn-dim btn-full btn-lg" onclick="advanceDay()" style="border:1px solid var(--border)">Close Out the Day</button>
-  </div>
+</div>
+
+<!-- END DAY BUTTON (visible from all tabs) -->
+<div id="endDayButtonWrap" style="padding:4px 16px 14px;position:sticky;bottom:76px;background:var(--bg);z-index:50;border-top:1px solid var(--border);">
+  <button class="btn btn-dim btn-full btn-lg" onclick="advanceDay()" style="border:1px solid var(--border)">Close Out the Day</button>
 </div>
 
 <!-- GUESTS VIEW -->
 <div class="view" id="view-guests">
   <div class="section">
+    <div id="noTimeBannerGuests"></div>
     <div class="sec-title">Arriving Today <span class="sec-count" id="arrivalCount">0</span></div>
     <div id="arrivalList"></div>
     <div class="sec-title" style="margin-top:8px">Checked In <span class="sec-count" id="guestCount">0</span></div>
@@ -858,6 +872,7 @@
 <!-- GHOSTS VIEW -->
 <div class="view" id="view-ghosts">
   <div class="section">
+    <div id="noTimeBannerGhosts"></div>
     <div class="sec-title">Permanent Residents <span class="sec-count" id="ghostCount">0</span></div>
     <p class="note">Ghost mood shapes the entire floor. A restless permanent resident ruins sleep for everyone. A content one might actually help.</p>
     <div id="ghostList"></div>
@@ -944,6 +959,17 @@ const stopByLines = [
   name => `A brief knock, a brief exchange. ${name} says everything is fine. The way they say it suggests it is mostly fine.`,
   name => `You bring extra towels to ${name}. They did not ask for them. They needed them. This is the job.`,
   name => `${name} catches you in the hallway and asks about a good place to eat nearby. You make a recommendation. They look unconvinced but thank you anyway.`,
+];
+
+const checkInLines = [
+  name => `<strong>${name}</strong> arrives at the front entrance with considerably more luggage than expected.<br><br>You carry every bag without comment. They notice.`,
+  name => `<strong>${name}</strong> sweeps through the lobby like they own the place. They do not. You carry their bags anyway.`,
+  name => `<strong>${name}</strong> hesitates at the threshold, looking up at the building. You take their bags before they can change their mind.`,
+  name => `<strong>${name}</strong> arrives looking exhausted. You handle their luggage with extra care. They seem grateful.`,
+  name => `<strong>${name}</strong> tips you before you even touch the bags. Old money. You carry them like they contain something fragile.`,
+  name => `<strong>${name}</strong> insists on carrying one bag themselves. You do not ask what is in it.`,
+  name => `<strong>${name}</strong> apologizes for the weight of their luggage. You tell them you have carried heavier. This is true.`,
+  name => `<strong>${name}</strong> arrives with a single, ancient suitcase. It weighs more than it should. You do not comment.`,
 ];
 
 const upgradeDefs = [
@@ -1662,8 +1688,9 @@ function carryBags(id) {
   if (g) g.happiness = Math.min(100, g.happiness + 12);
   const gained = earn(5); addXP(2);
   if (window.AudioFX) window.AudioFX.playBell();
+  const checkInLine = checkInLines[Math.floor(Math.random()*checkInLines.length)](guest.name);
   showResult(
-    '<strong>'+guest.name+'</strong> arrives at the front entrance with considerably more luggage than expected.<br><br>You carry every bag without comment. They notice.',
+    checkInLine,
     'good',
     [{label:'Checked In',pos:true},{label:'+'+fmt(5)+' Tip',pos:true},{label:'+12% Happiness',pos:true}]
   );
@@ -1830,12 +1857,15 @@ function autoNeglectGhost(g) {
     g.mood = Math.min(100, g.mood+5);
     g.attendedSolitude = true; // tells the drift loop to use -1 not -6
     log(g.name+' was left undisturbed. They preferred it.','ghost');
-    return;
+    return null; // no ignore line for solitude ghosts
   }
   // All other ghosts expect attention.
   g.mood = Math.max(0, g.mood - 10);
   changeRep(-2, g.name+' was neglected overnight');
   log(g.name+' was neglected — no one attended to them today.','bad');
+  // Return the ignore line for display
+  const line = g.ignoreLine ? g.ignoreLine[Math.floor(Math.random()*g.ignoreLine.length)] : null;
+  return line ? { name: g.name, line: line } : null;
 }
 
 function ghostHistory(id) {
@@ -1917,7 +1947,14 @@ function advanceDay() {
   }
 
   // Auto-neglect: fires BEFORE resetting interactedToday so yesterday's actions count
-  G.ghosts.forEach(gh=>{ if (!gh.interactedToday) autoNeglectGhost(gh); });
+  // Collect ignored ghost messages to display
+  const ignoredGhostMessages = [];
+  G.ghosts.forEach(gh=>{ 
+    if (!gh.interactedToday) {
+      const result = autoNeglectGhost(gh);
+      if (result) ignoredGhostMessages.push(result);
+    }
+  });
 
   // Ghost mood drift — tended/solitude-left = -1/night, neglected = -6/night
   G.ghosts.forEach(gh=>{
@@ -2038,6 +2075,20 @@ function advanceDay() {
     return;
   }
 
+  // Show ignored ghost popup if any ghosts were neglected
+  if (ignoredGhostMessages.length > 0) {
+    const ghostMsg = ignoredGhostMessages[0]; // Show one at a time to not overwhelm
+    showResult(
+      '<strong>'+ghostMsg.name+'</strong> was not attended to.<br><br><em>'+ghostMsg.line+'</em>',
+      'bad',
+      [{label:'-10 Mood',neg:true},{label:'-2 Rating',neg:true},{label:'Neglected',neg:true}]
+    );
+    // Still need to render and save
+    renderAll();
+    saveGame();
+    return; // Skip event trigger for this turn - ghost consequences take priority
+  }
+
   // No events day 1; from day 2 events only trigger if at least one guest is checked in OR it's a ghost-only event
   const canEvent = G.day > 1 && (G.guests.length > 0 || Math.random() > 0.5);
   if (canEvent && (G.day%2===0||Math.random()>0.55)) triggerEvent();
@@ -2105,9 +2156,12 @@ function renderAll() {
   const guestsBadge = document.getElementById('badge-guests');
   const ghostsBadge = document.getElementById('badge-ghosts');
 
-  // Today: badge if active event
+  // Today: badge if active event OR pending tasks
+  const pendingTasks = G.tasks.filter(t => !t.done).length;
   if (G.activeEvent) {
     todayBadge.textContent = '!'; todayBadge.style.display = 'block';
+  } else if (pendingTasks > 0) {
+    todayBadge.textContent = pendingTasks; todayBadge.style.display = 'block';
   } else {
     todayBadge.style.display = 'none';
   }
@@ -2120,10 +2174,13 @@ function renderAll() {
     guestsBadge.style.display = 'none';
   }
 
-  // Ghosts: badge = number of restless residents (mood < 35) who haven't been tended to today
-  const restlessCount = G.ghosts.filter(g => g.mood < 35 && !g.interactedToday).length;
+  // Ghosts: badge = number of ghosts who haven't been tended to today (restless ones shown with !, others show count)
+  const untendedGhosts = G.ghosts.filter(g => !g.interactedToday && !g.prefersSolitude);
+  const restlessCount = untendedGhosts.filter(g => g.mood < 35).length;
   if (restlessCount > 0) {
-    ghostsBadge.textContent = restlessCount; ghostsBadge.style.display = 'block';
+    ghostsBadge.textContent = '!'; ghostsBadge.style.display = 'block';
+  } else if (untendedGhosts.length > 0) {
+    ghostsBadge.textContent = untendedGhosts.length; ghostsBadge.style.display = 'block';
   } else {
     ghostsBadge.style.display = 'none';
   }
@@ -2143,11 +2200,13 @@ function renderAll() {
   document.getElementById('timeBar').style.cssText = 'width:'+timePct+'%;background:'+timeColor;
   document.getElementById('timeBarLabel').textContent = unitsLabel(G.unitsLeft)+' of '+SHIFT_HOURS+'h';
 
-  // No time banner
-  const banner = document.getElementById('noTimeBanner');
-  banner.innerHTML = G.unitsLeft <= 0
+  // No time banner - show in all tabs
+  const noTimeBannerHtml = G.unitsLeft <= 0
     ? '<div class="no-time-banner">Your shift time is used up. End the shift to begin a new day.</div>'
     : '';
+  document.getElementById('noTimeBanner').innerHTML = noTimeBannerHtml;
+  document.getElementById('noTimeBannerGuests').innerHTML = noTimeBannerHtml;
+  document.getElementById('noTimeBannerGhosts').innerHTML = noTimeBannerHtml;
 
   // Active event
   const evSlot = document.getElementById('activeEventSlot');
