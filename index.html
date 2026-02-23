@@ -801,7 +801,7 @@
   <div class="star-row">
     <div class="stars" id="starDisplay"></div>
   </div>
-  <div class="star-tier" id="starTier" style="font-size:11px;color:var(--gold);font-family:'Playfair Display',serif;margin-top:4px">Questionable</div>
+  <div class="star-tier" id="starTier" style="font-size:11px;color:var(--gold);font-family:'Playfair Display',serif;margin-top:4px"><span style="font-size:9px;color:var(--ink-faint);font-family:'Courier Prime',monospace;letter-spacing:1px;font-style:normal">STANDING </span><span id="starTierWord">Questionable</span></div>
   <div class="rep-bar-track" style="margin:8px 0 0"><div class="rep-bar-fill" id="repBar" style="width:20%"></div></div>
   <div class="header-row">
     <div class="hpill htips">Tips<span class="v" id="tipsVal">$0</span></div>
@@ -1076,12 +1076,12 @@ const eventPool = [
     { text:'Stall her in the lobby for fifteen minutes', hint:'Buys time to prepare', res:'You stall brilliantly. The kitchen is presentable when she arrives. Clean report. Management thanks you later.', fx:{rep:5,tips:5,xp:1} },
     { text:'Let her go wherever she likes', hint:'Could go either way', res:'She finds a playing card, seven of hearts, on the prep counter. She photographs it, marks it as a hygiene concern, and leaves with a deeply puzzled expression.', fx:{rep:-6,xp:0} },
   ]},
-  { id:'e9', minDay:10, title:'The Wheel', body:'The pottery wheel in the lobby art display — the one that has been a static decorative piece since 1994 — is spinning. Slowly. With wet clay on it that was not there before. A couple on their honeymoon is standing in front of it, completely still, holding hands. Nobody has touched the wheel.', choices:[
-    { text:'Dim the lobby lights and say nothing', hint:'Let the moment happen', res:'You dim the lights and step back. The clay rises slowly on the wheel — no hands visible, but shaped deliberately, unmistakably. The couple stands watching for eleven minutes. They tip you $80 at checkout and request the same room next anniversary.', fx:{rep:10,tips:80,xp:3} },
+  { id:'e9', minDay:10, title:'The Wheel', body:'The pottery wheel in the lobby art display, the one that has been a static decorative piece since 1994, is spinning. Slowly. With wet clay on it that was not there before. A couple on their honeymoon is standing in front of it, completely still, holding hands. Nobody has touched the wheel.', choices:[
+    { text:'Dim the lobby lights and say nothing', hint:'Let the moment happen', res:'You dim the lights and step back. The clay rises slowly on the wheel. No hands visible, but shaped deliberately, unmistakably. The couple stands watching for eleven minutes. They tip you $80 at checkout and request the same room next anniversary.', fx:{rep:10,tips:80,xp:3} },
     { text:'Call it a malfunction and apologize', hint:'Safest story. Ruins it completely.', res:'"Hydraulic display feature." You say it with total conviction. The wheel slows and stops. The clay collapses. The couple looks deeply disappointed. You have broken something that was not yours to break.', fx:{rep:-3,xp:0} },
     { text:'Ask the couple if they would like to sit down at it', hint:'Some things should be experienced properly', res:'They sit. The clay moves beneath their hands in a way that cannot be explained. Nobody speaks. When it is over the woman is crying. The man says quietly: "I felt someone else\'s hands." You go back to the desk and do not speak of it.', fx:{rep:8,tips:60,xp:4} },
   ]},
-  { id:'e10', minDay:8, title:'The Water Mark', body:'There is a waterline on the lobby wall. Faint, horizontal, about four feet up — the kind left by a flood. No flood has touched this building. The line was not there yesterday. A guest who grew up in Portland has gone very quiet looking at it.', choices:[
+  { id:'e10', minDay:8, title:'The Water Mark', body:'There is a waterline on the lobby wall. Faint, horizontal, about four feet up. The kind left by a flood. No flood has touched this building. The line was not there yesterday. A guest who grew up in Portland has gone very quiet looking at it.', choices:[
     { text:'Tell her what you know about the 1894 flood', hint:'The Willamette reached 33.5 feet downtown that year. 250 blocks submerged.', res:'She listens carefully. Then she says: "My great-grandmother lost everything on Front Street that summer." She stands at the mark for a long time. She leaves a large tip and a handwritten note: "Thank you for knowing."', fx:{rep:7,tips:45,xp:3} },
     { text:'Paint over it before other guests see', hint:'Clean and fast', res:'You paint over it before breakfast. By afternoon it has reappeared, exactly as before, at exactly the same height. You do not paint over it again.', fx:{rep:0,xp:1} },
     { text:'Photograph it and say nothing', hint:'Document first', res:'The photograph shows only a clean wall. The line is visible in the room. This is useful information, somehow.', fx:{rep:2,xp:2} },
@@ -1091,9 +1091,9 @@ const eventPool = [
     { text:'Return the photograph to the front desk lost and found', hint:'Protocol. Nothing more.', res:'The photograph stays in the lost and found. Nobody claims it. By next week it will be in the drawer with the unclaimed keys. This feels like the wrong ending.', fx:{rep:1,xp:0} },
     { text:'Leave the photograph where it was found', hint:'Some things belong where they are', res:'You put it back behind the mirror. That night the light in Room 20 pulses once, warm and brief, like something finally acknowledged. In the morning the photograph is gone.', fx:{rep:4,xp:2,tips:10} },
   ]},
-  { id:'e12', minDay:15, title:'What Came Up From Below', body:'During a plumbing repair, workers broke through to a brick-lined passage beneath the hotel basement. Old construction — mid 1800s Portland, waterfront era. One worker refuses to go back down. He says there is a cell carved into the wall with iron rings still bolted into the stone. He says something is still in there.', choices:[
+  { id:'e12', minDay:15, title:'What Came Up From Below', body:'During a plumbing repair, workers broke through to a brick-lined passage beneath the hotel basement. Old construction. Mid 1800s Portland, waterfront era. One worker refuses to go back down. He says there is a cell carved into the wall with iron rings still bolted into the stone. He says something is still in there.', choices:[
     { text:'Seal it immediately, no documentation', hint:'What guests do not know cannot hurt bookings', res:'The passage is sealed by end of day. Nobody asks questions. That night every door in the building opens simultaneously at 3am and closes again. Management files it as a pressure event.', fx:{rep:0,xp:1} },
-    { text:'Contact a Portland historian before doing anything', hint:'The Shanghai tunnel network beneath Old Town Portland dates to the 1850s. Whether it was used for shanghaiing is disputed — but the tunnels are real.', res:'The historian arrives within the hour. She confirms the passage is genuine 1850s construction and likely connected to the Old Town waterfront network. She writes about it. The Bellmore receives a heritage designation application within a month.', fx:{rep:12,xp:3} },
+    { text:'Contact a Portland historian before doing anything', hint:'The Shanghai tunnel network beneath Old Town Portland dates to the 1850s. Whether it was used for shanghaiing is disputed, but the tunnels are real.', res:'The historian arrives within the hour. She confirms the passage is genuine 1850s construction and likely connected to the Old Town waterfront network. She writes about it. The Bellmore receives a heritage designation application within a month.', fx:{rep:12,xp:3} },
     { text:'Go down yourself', hint:'You will regret this or you will not', res:'The passage is cold and smells of river water and something older. The cell is real. The iron rings are worn smooth in a specific way. You come back up and sit quietly at the desk for a while before your shift continues.', fx:{rep:3,xp:4} },
   ]},
   { id:'e13', minDay:10, title:'The Columbus Day Storm', body:'October 12. The weather service has issued a severe wind warning. The barometer is dropping in a way that makes the older staff nervous. One of the long-timers says only: "I was here in \'62." In 1962, the Columbus Day Storm hit downtown Portland at 116 miles per hour and killed 38 people across Oregon. The oldest guests are checking the sky.', choices:[
@@ -1101,8 +1101,8 @@ const eventPool = [
     { text:'Reassure guests that modern forecasting is much better now', hint:'Partially true', res:'The storm is bad but not catastrophic. Most guests take your word for it. One does not, checks out before the rain starts, and misses the worst of it by exactly twenty minutes.', fx:{rep:3,xp:1} },
     { text:'Ask the long-timer what 1962 was actually like', hint:'Some history should be heard directly', res:'She tells you about the trees coming down, the power out for days, a silence afterward that felt wrong. "The building groaned," she says. "Like it was deciding." She looks at the ceiling. "It decided to stay." Tonight it holds again.', fx:{rep:5,tips:15,xp:2} },
   ]},
-  { id:'e14', minDay:5, needsPasskey:true, title:'What Reginald Left Behind', body:'With the master passkey in hand, you finally open Room 12 properly. Inside: every piece of furniture is arranged for a formal dinner service — eight place settings, crystal glasses, silver that should not exist in this building. Reginald is not visible. But the room is very cold, and the chair at the head of the table has been pulled out.', choices:[
-    { text:'Sit down at the table', hint:'You have the passkey. You have the right.', res:'You sit. The room is quiet for a long moment. Then, slowly, the silver nearest you slides a fraction of an inch — and holds. Reginald, somewhere in the room, has acknowledged you. His mood has lifted noticeably. The cold lifts too.', fx:{rep:5,gm:['Reginald Forthwick',20],xp:3} },
+  { id:'e14', minDay:5, needsPasskey:true, title:'What Reginald Left Behind', body:'With the master passkey in hand, you finally open Room 12 properly. Inside: every piece of furniture is arranged for a formal dinner service. Eight place settings, crystal glasses, silver that should not exist in this building. Reginald is not visible. But the room is very cold, and the chair at the head of the table has been pulled out.', choices:[
+    { text:'Sit down at the table', hint:'You have the passkey. You have the right.', res:'You sit. The room is quiet for a long moment. Then, slowly, the silver nearest you slides a fraction of an inch. It holds. Reginald, somewhere in the room, has acknowledged you. His mood has lifted noticeably. The cold lifts too.', fx:{rep:5,gm:['Reginald Forthwick',20],xp:3} },
     { text:'Set the table properly before leaving', hint:'Correct the one thing out of place', res:'You notice a fish fork on the wrong side. You move it. The temperature in the room rises several degrees immediately. You can hear, very faintly, what sounds like approval. This is the most surreal thing you have done at this job.', fx:{rep:4,gm:['Reginald Forthwick',15],xp:2} },
     { text:'Document the room and lock it again', hint:'Some things should be on the record', res:'You photograph the settings, log the incident, and re-lock the door. Reginald rattles a distant pipe once. Displeasure noted.', fx:{rep:2,gm:['Reginald Forthwick',-5],xp:1} },
   ]},
@@ -1146,7 +1146,7 @@ const taskPool = [
   { t:'A Portland preservation society wants to landmark the building. Respond as owner.', xp:3, needsOwner:true },
   { t:'Room 12 has been rearranged again overnight. With the passkey, you can at least get in to set it right.', xp:2, needsPasskey:true },
   { t:'The place settings in Room 12 were found disturbed. Reginald expects them corrected before guests notice.', xp:2, needsPasskey:true },
-  { t:'Something was left outside Room 12 overnight — a folded card, blank, and a single silver fork. Log it.', xp:3, needsPasskey:true },
+  { t:'Something was left outside Room 12 overnight: a folded card, blank, and a single silver fork. Log it.', xp:3, needsPasskey:true },
 ];
 
 const ghostUnlockPool = [
@@ -1154,7 +1154,7 @@ const ghostUnlockPool = [
     name:'Edmund Pryce', room:14, era:'1930s', unlockDay:8, interactVerb:'File a Report',
     desc:'House detective during Prohibition. Knew where every secret was kept. Died knowing too many of them.',
     mood:40, want:'Acknowledgment that he protected this hotel',
-    backstory:'Edmund Pryce kept The Bellmore\'s secrets during the roughest decade of its history. Bootleggers, politicians, affairs — he handled all of it quietly and without ever writing anything down. He died in 1934, officially of a heart attack, in Room 14. He is territorial, watchful, and deeply suspicious of guests he does not recognize.',
+    backstory:'Edmund Pryce kept The Bellmore\'s secrets during the roughest decade of its history. Bootleggers, politicians, affairs. He handled all of it quietly and without ever writing anything down. He died in 1934, officially of a heart attack, in Room 14. He is territorial, watchful, and deeply suspicious of guests he does not recognize.',
     sootheLine:['You feel very clearly that you are being observed from the corner of the hallway. Nothing is there.','A door that was locked is now unlocked. A door that was open is now closed.','The air in Room 14 shifts. Not cold exactly. More like attention.'],
     ignoreLine:['You find a note on the front desk that was not there before. It says only: "I am watching."','The master key goes missing for twenty minutes. It turns up exactly where you left it.','Nothing happens. Edmund has seen worse than you.'],
   },
@@ -1184,9 +1184,9 @@ const ghostUnlockPool = [
   },
   {
     name:'The Boy on Floor 2', room:6, era:'Unknown', unlockDay:40, interactVerb:'Follow the Sound',
-    desc:'Nobody knows his name. He is heard before he is seen — a rubber ball bouncing at odd hours, then silence. He does not know he should not be here.',
+    desc:'Nobody knows his name. He is heard before he is seen: a rubber ball bouncing at odd hours, then silence. He does not know he should not be here.',
     mood:50, want:'Someone to acknowledge him without running away',
-    backstory:'Staff call him the boy on Floor 2. He has been here longer than anyone can document. He appears at the end of corridors and is gone before you look directly at him. He seems confused by the modern guests — their phones, their clothes, their startled reactions. One previous employee left a note in the staff file: "He just wants to play. He does not understand what he is."',
+    backstory:'Staff call him the boy on Floor 2. He has been here longer than anyone can document. He appears at the end of corridors and is gone before you look directly at him. He seems confused by the modern guests: their phones, their clothes, their startled reactions. One previous employee left a note in the staff file: "He just wants to play. He does not understand what he is."',
     sootheLine:['The bouncing stops. Then, faintly, what sounds like a child laughing. Far away.','A rubber ball, old and faded, sits in the middle of the corridor. It was not there a moment ago.','The elevator door opens on Floor 2, empty. It waits longer than it should before closing again.'],
     ignoreLine:['The ball bounces at 3am. It bounces at 3:15. It bounces at 3:30.','Something small and fast moves at the edge of your vision in the corridor.','Silence. Which somehow feels worse than the bouncing.'],
   },
@@ -1195,7 +1195,7 @@ const ghostUnlockPool = [
     desc:'The oldest presence in The Bellmore, here before the building had its current name. She sits in the reading room, always in the same chair, always watching the door.',
     mood:65, want:'To be remembered',
     backstory:'Dorothea Vane was the wife of the original builder, who died before the hotel opened. She never saw it finished. She has been in the reading room since 1887, watching guests arrive through a door she once stood at herself. She does not rearrange things or knock items over. She simply sits and watches, which in its own way is worse.',
-    sootheLine:['The reading room is warm when you enter, which it should not be at this hour. The chair by the window holds a slight impression.','You find a pressed flower on the reading room table. Perfectly preserved. There are no flowers in the building.','For a moment the hotel smells like 1887 — wood varnish, coal smoke, something floral. Then it is gone.'],
+    sootheLine:['The reading room is warm when you enter, which it should not be at this hour. The chair by the window holds a slight impression.','You find a pressed flower on the reading room table. Perfectly preserved. There are no flowers in the building.','For a moment the hotel smells like 1887. Wood varnish, coal smoke, something floral. Then it is gone.'],
     ignoreLine:['The reading room light flickers once.','You feel, strongly, that you have disappointed someone. The feeling passes in the corridor.','Nothing changes. Dorothea is patient. She has had a long time to become patient.'],
   },
   {
@@ -1266,7 +1266,7 @@ const ghostUnlockPool = [
     name:'Isaiah Crane', room:4, era:'1890s', unlockDay:20, interactVerb:'Watch the River', prefersSolitude:true,
     desc:'Dockworker from the 1894 flood. The Willamette reached 33.5 feet that June, submerging 250 city blocks. Isaiah was working the docks when the water came.',
     mood:45, want:'Someone to know what the water took',
-    backstory:'The Great Flood of 1894 was the worst in Portland\'s recorded history. The Willamette reached 33.5 feet — its highest mark ever — and swallowed 250 downtown blocks whole. Two drawbridges stuck open, splitting the city for days. Isaiah Crane was a dockworker on the Willamette waterfront when the river came over the banks on June 6th. He was thirty-one years old. He has been in Room 4 ever since, and on certain mornings the carpet near the window is inexplicably damp.',
+    backstory:'The Great Flood of 1894 was the worst in Portland\'s recorded history. The Willamette reached 33.5 feet, its highest mark ever, and swallowed 250 downtown blocks whole. Two drawbridges stuck open, splitting the city for days. Isaiah Crane was a dockworker on the Willamette waterfront when the river came over the banks on June 6th. He was thirty-one years old. He has been in Room 4 ever since, and on certain mornings the carpet near the window is inexplicably damp.',
     sootheLine:['The floor near the window in Room 4 is damp this morning. No pipe leak. No spill. Just damp.','You smell river water in the corridor outside Room 4. The Willamette is two miles from here.','The window in Room 4 fogs from the bottom up, as if water is rising against it. Then it clears.'],
     ignoreLine:['Room 4 is cold in a way that has nothing to do with the temperature.','A wet handprint appears briefly on the window of Room 4, facing inward. It fades in under a minute.','Nothing. Isaiah Crane has had decades to get used to being overlooked.'],
   },
@@ -1274,15 +1274,15 @@ const ghostUnlockPool = [
     name:'Calvin Dubois', room:21, era:'1940s', unlockDay:26, interactVerb:'Sit With Him',
     desc:'Shipyard worker from Vanport. Came from Louisiana on a wartime labor train in 1943. Built Liberty Ships for Kaiser. Was home on Memorial Day 1948 when the dike broke.',
     mood:55, want:'Someone to know that Vanport was real',
-    backstory:'Vanport was Oregon\'s second-largest city — a wartime housing project built in months for Kaiser Shipyard workers, home to 40,000 at its peak including thousands of African Americans who had come from the South on special labor trains. On Memorial Day 1948, the Housing Authority of Portland distributed leaflets that morning: "Dikes are safe at present. You will be warned if necessary." At 4:17pm the railroad dike broke. By nightfall, a city of 18,000 was gone. Calvin Dubois was in his apartment when the water came through the wall. He ended up at The Bellmore because Portland\'s hotels were among the few places required to take in the displaced. He never found permanent housing. He has been in Room 20 ever since. He keeps to himself. He does not make noise. He only asks that you know what happened.',
-    sootheLine:['Room 20 smells briefly of sawdust and river air — the smell of a working shipyard on a wet Oregon morning.','You find a folded piece of paper under the door of Room 20. It reads only: "Vanport, May 1948. We were here."','The light in Room 20 burns steadily all night. You did not leave it on. It is a comfort, somehow.'],
+    backstory:'Vanport was Oregon\'s second-largest city, a wartime housing project built in months for Kaiser Shipyard workers, home to 40,000 at its peak including thousands of African Americans who had come from the South on special labor trains. On Memorial Day 1948, the Housing Authority of Portland distributed leaflets that morning: "Dikes are safe at present. You will be warned if necessary." At 4:17pm the railroad dike broke. By nightfall, a city of 18,000 was gone. Calvin Dubois was in his apartment when the water came through the wall. He ended up at The Bellmore because Portland\'s hotels were among the few places required to take in the displaced. He never found permanent housing. He has been in Room 20 ever since. He keeps to himself. He does not make noise. He only asks that you know what happened.',
+    sootheLine:['Room 20 smells briefly of sawdust and river air. The smell of a working shipyard on a wet Oregon morning.','You find a folded piece of paper under the door of Room 20. It reads only: "Vanport, May 1948. We were here."','The light in Room 20 burns steadily all night. You did not leave it on. It is a comfort, somehow.'],
     ignoreLine:['Room 20 is dark when it should not be. The bulb is fine.','Nothing happens in Room 20. This is its own kind of heaviness.','Calvin is quiet. He has always been quiet. That was never the problem.'],
   },
   {
     name:'Thomas Cray', room:1, era:'1880s', unlockDay:55, interactVerb:'Open the Cellar Door', prefersSolitude:true,
-    desc:'Vanished from a waterfront saloon in 1887. Portland earned the name "Forbidden City of the West" in that era — whether the tunnels beneath Old Town were truly used for shanghaiing is still debated by historians. Thomas does not remember. He only knows he woke up somewhere else and could not find his way back.',
+    desc:'Vanished from a waterfront saloon in 1887. Portland earned the name "Forbidden City of the West" in that era. Whether the tunnels beneath Old Town were truly used for shanghaiing is still debated by historians. Thomas does not remember. He only knows he woke up somewhere else and could not find his way back.',
     mood:35, want:'To know what actually happened to him',
-    backstory:'Portland in the 1880s was a rough port city — saloons, crimps, and a waterfront economy built on ships that always needed crews. The tunnels beneath Old Town connected hotel basements to the Willamette docks, used officially for moving cargo out of the rain. Thomas Cray came in from eastern Oregon in the autumn of 1887, stopped at a waterfront tavern, and was never seen again. What happened in the hours between the tavern and wherever he woke up is genuinely unclear — historians have found no evidence the tunnels were systematically used for abduction, but men did vanish, ships did sail short-crewed, and Portland did earn its reputation. Thomas has been in Room 1 since the building was new. He is not angry. He is confused, which is in some ways harder to sit with.',
+    backstory:'Portland in the 1880s was a rough port city. Saloons, crimps, and a waterfront economy built on ships that always needed crews. The tunnels beneath Old Town connected hotel basements to the Willamette docks, used officially for moving cargo out of the rain. Thomas Cray came in from eastern Oregon in the autumn of 1887, stopped at a waterfront tavern, and was never seen again. What happened in the hours between the tavern and wherever he woke up is genuinely unclear. Historians have found no evidence the tunnels were systematically used for abduction, but men did vanish, ships did sail short-crewed, and Portland did earn its reputation. Thomas has been in Room 1 since the building was new. He is not angry. He is confused, which is in some ways harder to sit with.',
     sootheLine:['The door to the cellar stairwell, always locked, is found slightly open. Cold air rises from below.','You hear, once, from the direction of the basement, something that might be a man calling out. Then nothing.','A ship\'s manifest from 1887 is found tucked in the frame of the Room 1 door. The name T. Cray appears on it under "crew, unconfirmed." The ship is the Sarah Lee, outbound for Shanghai.'],
     ignoreLine:['The lock on the cellar door rattles. Once. Then stops.','Room 1 smells of salt water and sawdust. The nearest river is two miles away.','Thomas does not escalate. He has been waiting long enough to know that patience is the only thing he has left.'],
   },
@@ -1594,7 +1594,7 @@ function addXP(xp) {
   if (G.rankXP >= thresh && G.rank < 3) {
     G.rank++; G.rankXP = 0;
     const msgs = {
-      1: 'Management noticed. You have been moved to the front desk.<br><br>You now process guest check-ins directly. Guests see your face first. Your tips have increased — the desk commands more than a cart ever did.',
+      1: 'Management noticed. You have been moved to the front desk.<br><br>You now process guest check-ins directly. Guests see your face first. Your tips have increased. The desk commands more than a cart ever did.',
       2: 'The General Manager position is yours. Nobody else wanted it, which tells you something about this hotel.<br><br>You now earn ten times what you earned as a Bellhop. Daily hotel revenue begins flowing when you acquire the property. Guests treat you differently when you wear the title. Some of the permanent residents seem to have noticed as well.',
       3: 'You own The Bellmore. The deed is in your name, the ghosts are legally your problem, and the boiler is older than you are.<br><br>Revenue flows directly. The 5-star ceiling is gone. The hotel\'s fate is entirely yours.',
     };
@@ -1902,7 +1902,7 @@ function autoNeglectGhost(g) {
     g.mood = Math.max(0, g.mood - 8);
     if (g.mood < 30) {
       changeRep(-2, g.name+' was neglected and is now restless overnight');
-      log(g.name+' has been neglected too long — restless and getting worse.','bad');
+      log(g.name+' has been neglected too long. Restless and getting worse.','bad');
     } else {
       log(g.name+' has gone '+g.daysSinceAttended+' days without attention. Mood is slipping.','neutral');
     }
@@ -1962,7 +1962,7 @@ function buyUpgrade(uid) {
   } else if (uid === 'passkey') {
     log('The master passkey is in your hand. Room 12 is no longer a question.','ghost');
     showResult(
-      'The key was in the manager\'s drawer, tagged <em>"Room 12 — Do Not Use."</em><br><br>The tag is old. The handwriting is not anyone currently on staff.<br><br>You put the key in your pocket. Down the corridor, very faintly, you hear what sounds like silver being set on a table.<br><br><em>Reginald knows you have it.</em>',
+      'The key was in the manager\'s drawer, tagged <em>"Room 12. Do Not Use."</em><br><br>The tag is old. The handwriting is not anyone currently on staff.<br><br>You put the key in your pocket. Down the corridor, very faintly, you hear what sounds like silver being set on a table.<br><br><em>Reginald knows you have it.</em>',
       'ghost',
       [{label:'Room 12 Unlocked',pos:true},{label:'New Tasks Available',pos:true},{label:'Something Is Waiting',pos:true}]
     );
@@ -2036,7 +2036,7 @@ function advanceDay() {
   const ghostRoomNoticeLines = [
     (guestName, ghostName) => guestName+' mentioned something odd about their room last night. The furniture had moved, slightly. They did not seem frightened. More puzzled.',
     (guestName, ghostName) => guestName+' found the room unusually cold when they woke. Left a note at the front desk. The note did not mention '+ghostName+' by name but the description was accurate.',
-    (guestName, ghostName) => 'The guest in '+guestName+'\'s room reported a smell — old perfume, or pipe smoke, or something they could not place. Gone by morning.',
+    (guestName, ghostName) => 'The guest in '+guestName+'\'s room reported a smell: old perfume, or pipe smoke, or something they could not place. Gone by morning.',
     (guestName, ghostName) => guestName+' asked if the hotel had a history. You said something noncommittal. They nodded like you had confirmed something.',
     (guestName, ghostName) => 'Nothing was reported from '+guestName+'\'s room overnight. The silence had a specific quality to it.',
   ];
@@ -2242,7 +2242,7 @@ function renderAll() {
   let starHtml = '';
   for (let i=1;i<=5;i++) starHtml+=`<span class="star ${i<=stars?'on':'off'}">★</span>`;
   document.getElementById('starDisplay').innerHTML = starHtml;
-  document.getElementById('starTier').textContent = starTiers[stars];
+  document.getElementById('starTierWord').textContent = starTiers[stars];
   document.getElementById('repBar').style.cssText = 'width:'+repBarPct(G.rep)+'%;background:'+repBarColor(G.rep);
   document.getElementById('repBar').classList.toggle('danger', G.rep <= 35);
   document.getElementById('timeBar').style.cssText = 'width:'+timePct+'%;background:'+timeColor;
