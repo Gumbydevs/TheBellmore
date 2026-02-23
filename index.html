@@ -979,14 +979,21 @@ const checkInLines = [
 ];
 
 const upgradeDefs = [
-  { id:'flowers', name:'Fresh Lobby Flowers', cost:20, desc:'A better first impression. +4 hotel rating at the start of each day.' },
-  { id:'tipjar', name:'Tip Jar at Front Desk', cost:30, desc:'Happy checkouts leave more. +$6 per satisfied guest checkout.' },
-  { id:'incense', name:'Incense for Room 7', cost:25, desc:'Agnes appreciates it. Her mood starts each day 15 points higher.' },
-  { id:'passkey', name:'The Master Passkey', cost:40, desc:'Unlocks Room 12. Reginald Forthwick has been waiting. Something else has too.' },
-  { id:'press', name:'Local Press Contact', cost:50, desc:'Bad reviews hit 50% softer. Someone at the Oregonian owes you.' },
-  { id:'auditor', name:'Hire a Night Auditor', cost:60, desc:'Incomplete tasks no longer cost hotel rating overnight.' },
-  { id:'bellcart', name:'New Bell Cart', cost:35, desc:'Checking in guests costs 0 hours instead of 1. First impressions, faster.' },
-  { id:'buyhotel', name:'Acquire the Property', cost:0, desc:'Put down the deposit and sign the purchase agreement. The previous owner has been looking for a way out for years. The remaining balance is paid in weekly instalments from hotel revenue. Miss two payments and the deed reverts. The permanent residents are not mentioned in the contract. They did not need to be.', special:true },
+  { id:'flowers',  name:'Fresh Lobby Flowers',   cost:60,  desc:'A better first impression. +4 hotel rating at the start of each day.' },
+  { id:'tipjar',   name:'Tip Jar at Front Desk',  cost:100, minRank:1, desc:'Happy checkouts leave more. +$6 per satisfied guest checkout. Requires Front Desk access.' },
+  { id:'incense',  name:'Incense for Room 7',      cost:150, desc:'Agnes appreciates it. Her mood starts each day 15 points higher.' },
+  { id:'passkey',  name:'The Master Passkey',      cost:200, minRank:1, desc:'Unlocks Room 12. Reginald Forthwick has been waiting. Something else has too.' },
+  { id:'bellcart', name:'New Bell Cart',            cost:250, minRank:1, desc:'Processing check-ins costs 0 hours instead of 1. First impressions, faster.' },
+  { id:'press',    name:'Local Press Contact',      cost:400, minRank:1, desc:'Bad reviews hit 50% softer. Someone at the Oregonian owes you.' },
+  { id:'auditor',  name:'Hire a Night Auditor',     cost:600, minRank:2, desc:'Incomplete tasks no longer cost hotel rating overnight. Requires General Manager authority to hire.' },
+  { id:'guestbook', name:'Leather-Bound Guest Book', cost:175, desc:'Fulfilled requests earn an extra +$4. Guests whose wishes are recorded feel their stay was remembered.' },
+  { id:'clocktower', name:'Wind the Lobby Clock',    cost:300, minRank:1, desc:'The lobby clock has not told the correct time since 1978. Winding it properly restores the rhythm of the building. Grants one additional shift unit each day.' },
+  { id:'seancekit',  name:'Séance Kit from the Attic', cost:350, minRank:1, desc:'A wooden board, a weighted glass, and a candle holder from the attic store. Ghost interactions earn +$8 and their moods decay 1 point slower each night.' },
+  { id:'confidential', name:'Discretion Policy',     cost:500, minRank:1, desc:'A framed card at the desk. "The Bellmore does not discuss its guests." VIPs arrive 10 points happier and their checkouts earn double reputation.' },
+  { id:'cashsafe',   name:'Hotel Cash Safe',          cost:700, minRank:2, desc:'A cast iron safe behind the front desk, combination known only to management. Earns 5% passive interest on current funds each day, up to $200.' },
+  { id:'roofgarden', name:'Rooftop Garden',           cost:900, minRank:2, desc:'Six planters, a stone bench, and a view of the city through the fog. Guest happiness no longer decays overnight while this is maintained.' },
+  { id:'laundry',    name:'Laundry & Pressing Service', cost:1200, minRank:2, desc:'A full pressing operation in the basement. Room visits earn double the base gratuity. Guests notice the small details.' },
+  { id:'buyhotel', name:'Acquire the Property',     cost:0,   desc:'Put down the deposit and sign the purchase agreement. The previous owner has been looking for a way out for years. The remaining balance is paid in weekly instalments from hotel revenue. Miss two payments and the deed reverts. The permanent residents are not mentioned in the contract. They did not need to be.', special:true },
 ];
 
 const guestPool = [
@@ -1711,15 +1718,14 @@ function carryBags(id) {
   const guest = _completeCheckIn(id);
   if (!guest) return;
   const g = G.guests.find(x=>x.name===guest.name);
-  if (g) g.happiness = Math.min(100, g.happiness + 12);
+  const vipDiscreetBonus = (owned('confidential') && guest.tag==='vip') ? 10 : 0;
+  if (g) g.happiness = Math.min(100, g.happiness + 12 + vipDiscreetBonus);
   const gained = earn(5); addXP(2);
   if (window.AudioFX) window.AudioFX.playBell();
   const checkInLine = checkInLines[Math.floor(Math.random()*checkInLines.length)](guest.name);
-  showResult(
-    checkInLine,
-    'good',
-    [{label:'Checked In',pos:true},{label:'+'+fmt(5)+' Tip',pos:true},{label:'+12% Happiness',pos:true}]
-  );
+  const carryPills = [{label:'Checked In',pos:true},{label:'+'+fmt(5)+' Tip',pos:true},{label:'+12% Happiness',pos:true}];
+  if (vipDiscreetBonus) carryPills.push({label:'Discretion Policy: +10% Mood',pos:true});
+  showResult(checkInLine,'good',carryPills);
   renderAll();
 }
 
@@ -1748,16 +1754,18 @@ function processCheckIn(id) {
   const guest = _completeCheckIn(id);
   if (!guest) return;
   const g = G.guests.find(x=>x.name===guest.name);
-  if (g) g.happiness = Math.min(100, g.happiness + 8);
+  const vipBonus = (owned('confidential') && a.tag==='vip') ? 10 : 0;
+  if (g) g.happiness = Math.min(100, g.happiness + 8 + vipBonus);
   addXP(2);
   // Desk clerk earns a check-in gratuity — more than a bellhop, scaled by guest type
   const tipBase = a.tag==='vip' ? 18 : a.tag==='trouble' ? 6 : a.tag==='sensitive' ? 10 : 12;
   const gained = earn(tipBase);
   if (window.AudioFX) window.AudioFX.playBell();
+  const checkInPills = [{label:'Checked In',pos:true},{label:'+'+fmt(tipBase)+' Tip',pos:true},{label:'+8% Happiness',pos:true}];
+  if (vipBonus) checkInPills.push({label:'Discretion Policy: +10% Mood',pos:true});
   showResult(
     'You process <strong>'+guest.name+'</strong>\'s reservation, confirm their room, and see their luggage dispatched. Professional. Efficient. Exactly right.',
-    'good',
-    [{label:'Checked In',pos:true},{label:'+'+fmt(tipBase)+' Tip',pos:true},{label:'+8% Happiness',pos:true}]
+    'good', checkInPills
   );
   renderAll();
 }
@@ -1776,7 +1784,8 @@ function stopByRoom(id) {
   const wasMaxed = g.happiness >= 100;
   const boost = Math.min(100-g.happiness, 10+Math.floor(Math.random()*8));
   g.happiness = Math.min(100, g.happiness+boost);
-  const earned = earn(3); addXP(1);
+  const stopByBase = owned('laundry') ? 6 : 3;
+  const earned = earn(stopByBase); addXP(1);
   const lineGen = stopByLines[Math.floor(Math.random()*stopByLines.length)];
   const flavorLine = lineGen(g.name.split(' ')[g.name.split(' ').length > 1 ? 1 : 0]);
   if (g.happiness >= 100 && !wasMaxed) {
@@ -1786,7 +1795,7 @@ function stopByRoom(id) {
     showResult(flavorLine+'<br><br><strong>'+g.name+'</strong> pulls you aside a moment later.<br><br>"I was going to write a scathing review before you got here. Consider it buried."<br><br>They press a folded bill into your hand.','good',[{label:'+'+fmt(bonusBase)+' Bonus',pos:true},{label:'+5 Hotel Rating',pos:true},{label:'Guest Thrilled',pos:true}]);
   } else {
     log('Stopped by '+g.name+'\'s room. +'+boost+'% mood.','neutral');
-    showResult(flavorLine,'neutral',[{label:'+'+boost+'% Mood',pos:true},{label:'+'+fmt(3),pos:true}]);
+    showResult(flavorLine,'neutral',[{label:'+'+boost+'% Mood',pos:true},{label:'+'+fmt(stopByBase)+(owned('laundry')?' (pressing)':''),pos:true}]);
   }
   renderAll();
 }
@@ -1841,30 +1850,33 @@ function checkoutGuest(id) {
   const bonusBase = owned('tipjar')?6:0;
   const tipBase = g.happiness>=90?20+bonusBase:g.happiness>=70?10+bonusBase:g.happiness>=50?3:0;
   earn(tipBase);
+  const isVip = g.tag === 'vip';
+  const confidentialMult = (owned('confidential') && isVip) ? 2 : 1;
   let repChange, outcome, type;
   if (g.happiness>=85) {
-    repChange = 4; changeRep(4);
+    repChange = 4 * confidentialMult; changeRep(repChange);
     outcome = 'They settle their bill without a word of complaint, fold a '+fmt(tipBase)+' into your hand, and say they will be back. You believe them.';
     type = 'good';
   } else if (g.happiness>=60) {
-    repChange = 1; changeRep(1);
+    repChange = 1 * confidentialMult; changeRep(repChange);
     outcome = tipBase>0
       ? 'A quiet, professional departure. '+fmt(tipBase)+' left on the counter. No complaints registered.'
       : 'A quiet departure. No complaints, no tip. Could have gone either way.';
     type = 'neutral';
   } else if (g.happiness>=40) {
-    changeRep(-4,'a disappointed checkout');
+    repChange = -4; changeRep(-4,'a disappointed checkout');
     outcome = 'They are polite about it, which somehow makes it worse. No tip. They will not be returning.';
     type = 'bad';
   } else {
-    changeRep(-8,'a guest who left furious');
+    repChange = -8; changeRep(-8,'a guest who left furious');
     outcome = 'They drop their key on the desk without a word. The silence is not a good sign. Expect a review.';
     type = 'bad';
   }
   const pills = [
     {label: g.happiness>=60 ? 'Checked Out ✓' : 'Checked Out', pos: g.happiness>=85, neg: g.happiness<40},
     ...(tipBase>0 ? [{label:'+'+fmt(tipBase)+' Tip', pos:true}] : []),
-    ...(repChange>0 ? [{label:'+'+repChange+' Rating', pos:true}] : (repChange<0 ? [{label:repChange+' Rating', neg:true}] : []))
+    ...(repChange>0 ? [{label:'+'+repChange+' Rating', pos:true}] : (repChange<0 ? [{label:repChange+' Rating', neg:true}] : [])),
+    ...(owned('confidential') && isVip && repChange > 0 ? [{label:'Discretion: Double Rep',pos:true}] : [])
   ];
   log(g.name+' checked out. Mood: '+g.happiness+'%. Tip: '+fmt(tipBase)+'.', type);
   if (window.AudioFX) window.AudioFX.playBell();
@@ -1911,7 +1923,9 @@ function interactGhost(id) {
   log('Tended to '+g.name+'. Mood improved.','ghost');
   const tolerance = ghostAttentionTolerance(g);
   const nextVisitNote = tolerance >= 3 ? 'They should be settled for a few days.' : tolerance >= 2 ? 'Check back in a day or two.' : 'They will want attention again tomorrow.';
-  showResult(line,'ghost',[{label:'+'+boost+' Mood',pos:true},{label:'+1 XP',pos:true},{label:nextVisitNote,pos:false}]);
+  const seancePills = [{label:'+'+boost+' Mood',pos:true},{label:'+1 XP',pos:true},{label:nextVisitNote,pos:false}];
+  if (owned('seancekit')) { const bonus = earn(8); seancePills.push({label:'+'+fmt(8)+' Séance Gratuity',pos:true}); }
+  showResult(line,'ghost',seancePills);
   renderAll();
 }
 
@@ -2003,6 +2017,11 @@ function completeTask(id) {
 function buyUpgrade(uid) {
   const u = G.upgrades.find(x=>x.id===uid);
   if (!u||u.owned) return;
+  if (u.minRank && G.rank < u.minRank) {
+    const rankNames = ['Bellhop','Front Desk Clerk','General Manager','Owner'];
+    showResult('You need to be <strong>'+rankNames[u.minRank]+'</strong> or above to acquire this.','neutral',[{label:'Rank Required',neg:true}]);
+    return;
+  }
   const cost = uid === 'buyhotel' ? hotelPrice() : u.cost;
   if (G.tips < cost) {
     if (uid === 'buyhotel') {
@@ -2033,6 +2052,55 @@ function buyUpgrade(uid) {
       'ghost',
       [{label:'Room 12 Unlocked',pos:true},{label:'New Tasks Available',pos:true},{label:'Something Is Waiting',pos:true}]
     );
+  } else if (uid === 'clocktower') {
+    log('The lobby clock has been wound. The building feels more organized.','good');
+    showResult(
+      'The mechanism had seized up sometime in the late seventies. You find the winding key in the maintenance drawer, third shelf down.<br><br>The clock runs. The lobby feels different for it. More deliberate. Staff who hear it move slightly faster without knowing why.<br><br><em>You have one more productive hour each shift.</em>',
+      'good',
+      [{label:'Clock Running',pos:true},{label:'+1 Hour/Day',pos:true}]
+    );
+  } else if (uid === 'cashsafe') {
+    log('A cast iron safe installed behind the front desk. The combination is yours alone.','good');
+    showResult(
+      'Two men deliver it on a trolley, bolt it to the floor behind the desk, and hand you a slip of paper with the combination.<br><br>You change the combination immediately. Old habit.<br><br><em>Your holdings now earn a small return each day. The Bellmore\'s money works harder than it sleeps.</em>',
+      'good',
+      [{label:'Safe Installed',pos:true},{label:'5% Daily Interest',pos:true},{label:'Max $200/day',pos:true}]
+    );
+  } else if (uid === 'seancekit') {
+    log('A séance kit recovered from the attic. Several residents seem to notice.','ghost');
+    showResult(
+      'The kit was in a steamer trunk on the fourth floor, which is strange because there is no fourth floor.<br><br>A wooden board, a weighted glass, a black candle and a small leather manual with no author listed. You bring it downstairs.<br><br>Something in the walls shifts. Not hostile. Attentive.<br><br><em>Ghost interactions now earn a small gratuity. Their moods hold a little longer.</em>',
+      'ghost',
+      [{label:'Kit Active',pos:true},{label:'+$8 per Interaction',pos:true},{label:'Slower Decay',pos:true}]
+    );
+  } else if (uid === 'confidential') {
+    log('Discretion policy established. VIP guests take notice.','good');
+    showResult(
+      'A small brass card in a frame now sits on the front desk.<br><br><em>"The Bellmore does not discuss its guests."</em><br><br>Word gets around. Certain guests — the kind who pay more and ask questions last — begin requesting The Bellmore by name.',
+      'good',
+      [{label:'Policy Active',pos:true},{label:'VIP +10% Mood',pos:true},{label:'VIP Double Rep',pos:true}]
+    );
+  } else if (uid === 'roofgarden') {
+    log('The rooftop garden is planted and maintained. Guests settle better.','good');
+    showResult(
+      'Six planters, salvaged from storage. Rosemary, lavender, and something no one can identify that blooms at night.<br><br>Guests take the stairs more often. They mention the view unprompted. Nobody has complained about the third floor noise since it was finished.<br><br><em>Guest happiness no longer falls overnight.</em>',
+      'good',
+      [{label:'Garden Open',pos:true},{label:'No Overnight Decay',pos:true}]
+    );
+  } else if (uid === 'laundry') {
+    log('Laundry and pressing service now operating in the basement.','good');
+    showResult(
+      'The basement machines have been running since the thirties, apparently. Someone just forgot to tell anyone.<br><br>Pressed shirts arrive before guests ask. Turn-down service is crisper. The little things compound.<br><br><em>Room visits earn double their base gratuity.</em>',
+      'good',
+      [{label:'Pressing Active',pos:true},{label:'$6 per Room Visit',pos:true}]
+    );
+  } else if (uid === 'guestbook') {
+    log('A leather-bound guest book placed at the front desk.','good');
+    showResult(
+      'You open it. The pages are blank, but they have the weight of a book that has been filled before and emptied of its entries for reasons you would rather not ask about.<br><br>Guests who have their requests fulfilled feel seen. The book records them that way.<br><br><em>Request rewards earn an extra +$4.</em>',
+      'good',
+      [{label:'Guest Book Active',pos:true},{label:'+$4 per Request',pos:true}]
+    );
   } else {
     log('Purchased: '+u.name,'good');
     showResult('<strong>'+u.name+'</strong> purchased.<br><br>'+u.desc,'good',[{label:'-$'+cost,neg:true},{label:'Active',pos:true}]);
@@ -2052,6 +2120,15 @@ function advanceDay() {
 
   // Lobby flowers upgrade
   if (owned('flowers')) { changeRep(4); log('Lobby flowers: +4 hotel rating.','good'); }
+
+  // Lobby clock upgrade — grants one extra shift unit each day
+  if (owned('clocktower')) { G.unitsLeft = Math.min(G.unitsLeft + hoursToUnits(1), SHIFT_UNITS + hoursToUnits(1)); log('The lobby clock keeps you on schedule. +1hr shift.','good'); }
+
+  // Cash safe — 5% daily interest on current funds, capped at $200
+  if (owned('cashsafe') && G.tips > 0) {
+    const interest = Math.min(200, Math.floor(G.tips * 0.05));
+    if (interest > 0) { G.tips += interest; G.totalTips += interest; log('Cash safe interest: +'+fmt(interest)+' on holdings.','good'); }
+  }
 
   // Weekly salary — paid every 7 days for non-owner staff
   if (!owned('buyhotel') && G.day % 7 === 0) {
@@ -2138,7 +2215,8 @@ function advanceDay() {
   G.ghosts.forEach(gh=>{
     const overdue = ghostIsOverdue(gh); // checks daysSinceAttended vs tolerance
     // attendedSolitude is set by autoNeglectGhost for solitude ghosts left undisturbed
-    const drift = (gh.interactedToday || gh.attendedSolitude) ? -1 : overdue ? -4 : 0;
+    const ghostDecayRate = overdue ? (owned('seancekit') ? -3 : -4) : 0;
+    const drift = (gh.interactedToday || gh.attendedSolitude) ? -1 : ghostDecayRate;
     gh.mood = Math.max(5, Math.min(95, gh.mood + drift));
     gh.attendedSolitude = false; // clear for next day
     if (owned('incense') && gh.name==='Agnes Bleecker') gh.mood = Math.min(95, gh.mood+10);
@@ -2192,15 +2270,26 @@ function advanceDay() {
   G.tasks = G.tasks.filter(t=>!t.done);
 
   // Guest happiness decay — ignoring guests costs you
-  G.guests.forEach(g=>{
-    if (!g.attendedToday && !g.reqFulfilledToday) {
-      // VIPs decay fastest, trouble guests are volatile, sensitive guests are forgiving
-      const decay = g.tag==='vip' ? 15 : g.tag==='trouble' ? 12 : g.tag==='sensitive' ? 6 : 10;
-      g.happiness = Math.max(0, g.happiness - decay);
-      if (g.happiness < 40) log(g.name+' is dissatisfied. Nobody checked in on them today.','bad');
-      else if (g.happiness < 60) log(g.name+' is growing impatient.','neutral');
-    }
-  });
+  // Rooftop garden suppresses overnight happiness decay entirely
+  if (!owned('roofgarden')) {
+    G.guests.forEach(g=>{
+      if (!g.attendedToday && !g.reqFulfilledToday) {
+        // VIPs decay fastest, trouble guests are volatile, sensitive guests are forgiving
+        const decay = g.tag==='vip' ? 15 : g.tag==='trouble' ? 12 : g.tag==='sensitive' ? 6 : 10;
+        g.happiness = Math.max(0, g.happiness - decay);
+        if (g.happiness < 40) log(g.name+' is dissatisfied. Nobody checked in on them today.','bad');
+        else if (g.happiness < 60) log(g.name+' is growing impatient.','neutral');
+      }
+    });
+  } else {
+    // Rooftop garden: guests who weren't attended still hold their mood
+    G.guests.forEach(g=>{
+      if (!g.attendedToday && !g.reqFulfilledToday && g.happiness < 50) {
+        // Only log distress if already quite unhappy
+        if (g.happiness < 30) log(g.name+' is unsettled despite the garden. Something else is wrong.','bad');
+      }
+    });
+  }
 
   // In-house unhappiness — ongoing drain for miserable guests
   // Guests whose stay is over but not yet processed leave on their own after one more day (and are not happy about it)
@@ -2619,13 +2708,17 @@ function renderAll() {
         }
       </div>`;
     }
-    return `<div class="upgrade-card ${u.owned?'owned':''}">
+    const rankNames = ['Bellhop','Front Desk Clerk','General Manager','Owner'];
+    const locked = u.minRank && G.rank < u.minRank;
+    return `<div class="upgrade-card ${u.owned?'owned':''} ${locked?'locked':''}">
       <div class="upgrade-name">${u.name}</div>
       <div class="upgrade-desc">${u.desc}</div>
       ${u.owned
         ? '<div style="font-size:10px;color:var(--green-bright);letter-spacing:1px">✓ PURCHASED</div>'
+        : locked
+        ? `<div style="font-size:10px;color:var(--ink-faint);font-style:italic">🔒 Requires ${rankNames[u.minRank]}</div>`
         : `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-             <div style="font-size:12px;color:var(--green-bright);font-weight:bold">$${u.cost}</div>
+             <div style="font-size:12px;color:var(--green-bright);font-weight:bold">${fmt(u.cost)}</div>
              <button class="btn ${G.tips>=u.cost?'btn-purple':'btn-dim'}" onclick="buyUpgrade('${u.id}')" style="flex:0;min-width:90px">${G.tips>=u.cost?'Purchase ('+fmt(u.cost)+')':'Need '+fmt(u.cost)}</button>
            </div>`
       }
