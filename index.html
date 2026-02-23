@@ -437,6 +437,9 @@
   .arrival-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #9b59b6; }
   .arrival-label { font-size: 9px; color: #c39bd3; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
 
+  /* GHOST OVERDUE */
+  .ghost-overdue { border-color: rgba(231,76,60,.5) !important; box-shadow: 0 0 10px rgba(231,76,60,.1); }
+
   /* NO TIME WARNING */
   .no-time-banner { background: rgba(231,76,60,.1); border: 1px solid rgba(231,76,60,.4); border-radius: 6px; padding: 10px 12px; margin: 0 16px 10px; font-size: 11px; color: var(--red-bright); text-align: center; font-style: italic; }
 </style>
@@ -1148,7 +1151,7 @@ const taskPool = [
 
 const ghostUnlockPool = [
   {
-    name:'Edmund Pryce', room:14, era:'1930s', unlockDay:5, interactVerb:'File a Report',
+    name:'Edmund Pryce', room:14, era:'1930s', unlockDay:8, interactVerb:'File a Report',
     desc:'House detective during Prohibition. Knew where every secret was kept. Died knowing too many of them.',
     mood:40, want:'Acknowledgment that he protected this hotel',
     backstory:'Edmund Pryce kept The Bellmore\'s secrets during the roughest decade of its history. Bootleggers, politicians, affairs — he handled all of it quietly and without ever writing anything down. He died in 1934, officially of a heart attack, in Room 14. He is territorial, watchful, and deeply suspicious of guests he does not recognize.',
@@ -1156,7 +1159,7 @@ const ghostUnlockPool = [
     ignoreLine:['You find a note on the front desk that was not there before. It says only: "I am watching."','The master key goes missing for twenty minutes. It turns up exactly where you left it.','Nothing happens. Edmund has seen worse than you.'],
   },
   {
-    name:'Nora Fenn', room:2, era:'1950s', unlockDay:9, interactVerb:'Do an Inspection',
+    name:'Nora Fenn', room:2, era:'1950s', unlockDay:14, interactVerb:'Do an Inspection',
     desc:'Head housekeeper for twenty two years. Retired in 1959, came back three days later, and never actually left.',
     mood:80, want:'The hotel to meet her standards',
     backstory:'Nora Fenn retired after twenty two years as head housekeeper, gave a tearful speech, accepted her gift, and was back inspecting rooms seventy two hours later. She died in 1972 still technically on staff. She has opinions about hospital corners, dust on baseboards, and the way the current staff folds towels. Her standards have not lowered in death.',
@@ -1164,7 +1167,7 @@ const ghostUnlockPool = [
     ignoreLine:['A basin faucet on Floor 2 runs cold for several minutes on its own.','You find a pillow on the floor in an empty room. It was not there this morning.','Nothing happens. Nora disapproves but she is a professional.'],
   },
   {
-    name:'Captain Harlan Voss', room:3, era:'1910s', unlockDay:13, interactVerb:'Review the Linens',
+    name:'Captain Harlan Voss', room:3, era:'1910s', unlockDay:18, interactVerb:'Review the Linens',
     desc:'Former sea captain turned landlocked hotelier. Died arguing with a supplier about linens in 1917. The argument was never resolved.',
     mood:55, want:'Someone to settle the linen dispute once and for all',
     backstory:'Harlan Voss spent thirty years at sea, retired to Portland, and promptly opened a hotel because he missed telling people what to do. He ran The Bellmore with military precision until a heated argument with his linen supplier gave him a fatal stroke. He has been furious ever since. The linen closet on Floor 3 is his domain.',
@@ -1172,7 +1175,7 @@ const ghostUnlockPool = [
     ignoreLine:['The linen closet jams. It will need to be forced open in the morning.','A window on Floor 3 opens by itself. It is cold outside.','Nothing happens. The Captain is either appeased or planning something.'],
   },
   {
-    name:'Miriam Dusk', room:9, era:'1960s', unlockDay:18, interactVerb:'Listen',
+    name:'Miriam Dusk', room:9, era:'1960s', unlockDay:24, interactVerb:'Listen',
     desc:'Jazz singer who performed in the hotel lounge every Friday for eleven years. Still shows up on Fridays.',
     mood:75, want:'Someone to listen to her perform',
     backstory:'Miriam Dusk was the best thing about The Bellmore in the 1960s and everyone knew it. She performed every Friday in the lounge and stayed in Room 9 through the weekend. In 1968 she did not drive back. She has not missed a Friday since. Guests occasionally report hearing music from the empty lounge late at night.',
@@ -1180,7 +1183,7 @@ const ghostUnlockPool = [
     ignoreLine:['The lounge piano plays something slightly off key. Once. Just once.','You find a cocktail napkin with what looks like a setlist written on it. The handwriting is old.','Nothing. Miriam is a professional. She has performed for inattentive audiences before.'],
   },
   {
-    name:'The Boy on Floor 2', room:6, era:'Unknown', unlockDay:24, interactVerb:'Follow the Sound',
+    name:'The Boy on Floor 2', room:6, era:'Unknown', unlockDay:40, interactVerb:'Follow the Sound',
     desc:'Nobody knows his name. He is heard before he is seen — a rubber ball bouncing at odd hours, then silence. He does not know he should not be here.',
     mood:50, want:'Someone to acknowledge him without running away',
     backstory:'Staff call him the boy on Floor 2. He has been here longer than anyone can document. He appears at the end of corridors and is gone before you look directly at him. He seems confused by the modern guests — their phones, their clothes, their startled reactions. One previous employee left a note in the staff file: "He just wants to play. He does not understand what he is."',
@@ -1188,7 +1191,7 @@ const ghostUnlockPool = [
     ignoreLine:['The ball bounces at 3am. It bounces at 3:15. It bounces at 3:30.','Something small and fast moves at the edge of your vision in the corridor.','Silence. Which somehow feels worse than the bouncing.'],
   },
   {
-    name:'Dorothea Vane', room:19, era:'1880s', unlockDay:30, interactVerb:'Sit With Her',
+    name:'Dorothea Vane', room:19, era:'1880s', unlockDay:36, interactVerb:'Sit With Her',
     desc:'The oldest presence in The Bellmore, here before the building had its current name. She sits in the reading room, always in the same chair, always watching the door.',
     mood:65, want:'To be remembered',
     backstory:'Dorothea Vane was the wife of the original builder, who died before the hotel opened. She never saw it finished. She has been in the reading room since 1887, watching guests arrive through a door she once stood at herself. She does not rearrange things or knock items over. She simply sits and watches, which in its own way is worse.',
@@ -1196,7 +1199,7 @@ const ghostUnlockPool = [
     ignoreLine:['The reading room light flickers once.','You feel, strongly, that you have disappointed someone. The feeling passes in the corridor.','Nothing changes. Dorothea is patient. She has had a long time to become patient.'],
   },
   {
-    name:'Cole Parish', room:16, era:'1990s', unlockDay:7, interactVerb:'Walk the Hallway With Him',
+    name:'Cole Parish', room:16, era:'1990s', unlockDay:12, interactVerb:'Walk the Hallway With Him',
     desc:'A quiet boy who wanders the corridors at night. He greets guests politely. He asks thoughtful questions. He does not understand why some of them scream.',
     mood:60, want:'Someone who is not afraid of him',
     backstory:'Cole Parish drowned in the hotel pool in 1993. He was eight years old. He does not know this. He believes he is a guest, same as the others, and cannot understand why the lights flicker when he enters a room or why adults sometimes back against the wall when he says hello. He sees the other permanent residents quite clearly. He is the only one who does. They find this unsettling.',
@@ -1204,7 +1207,7 @@ const ghostUnlockPool = [
     ignoreLine:['Every light on Floor 4 dims simultaneously for about four seconds.','You find a small wet footprint on the carpet. Just one. You look both ways down the hall.','Cole appears briefly at the end of the corridor and then is not there. He looked lonely.'],
   },
   {
-    name:'Silas Colt', room:8, era:'1880s', unlockDay:11, interactVerb:'Hear Him Out', prefersSolitude:true,
+    name:'Silas Colt', room:8, era:'1880s', unlockDay:16, interactVerb:'Hear Him Out', prefersSolitude:true,
     desc:'Drifted into Portland in 1882, checked in under a false name, and never checked out. His spurs leave no marks. His poker face is still perfect.',
     mood:50, want:'A fair game and someone to call him by his real name',
     backstory:'Nobody knew his real name when he was alive and the name he used is on a wanted poster in three territories. He came to The Bellmore to disappear, and in a manner of speaking it worked. He died in his room during a card game under disputed circumstances. He still plays most nights. The cards are always there in the morning, spread on the table in Room 8, mid hand. Nobody has ever seen who he plays against.',
@@ -1212,7 +1215,7 @@ const ghostUnlockPool = [
     ignoreLine:['Three doors on Floor 2 slam in quick succession. Not violently. Pointedly.','The lobby card table has been reset overnight, cards mid deal, no players.','Nothing. Silas has been ignored by better people than you.'],
   },
   {
-    name:'Franklin Beaumont', room:20, era:'1940s', unlockDay:15, interactVerb:'Pull Up a Chair',
+    name:'Franklin Beaumont', room:20, era:'1940s', unlockDay:22, interactVerb:'Pull Up a Chair',
     desc:'Bebop pianist from New Orleans. Toured the Pacific Northwest in 1947, stopped at The Bellmore for a week, and stayed considerably longer.',
     mood:70, want:'The piano to be kept in tune',
     backstory:'Franklin Beaumont was one of the finest bebop pianists the Pacific Northwest ever heard, which is to say almost nobody heard him. He played the hotel lounge six nights a week and practiced the seventh. He died in 1951 of pneumonia, which he had been ignoring for three months because the piano in the lounge had finally been tuned correctly and he did not want to stop. He is still there most evenings. The piano tends to stay in tune now.',
@@ -1220,7 +1223,7 @@ const ghostUnlockPool = [
     ignoreLine:['The piano plays a single discordant chord. Loud. At 2am.','Franklin\'s mood is in his playing. Tonight his playing is not kind.','Silence from the lounge. This is worse, somehow, than the noise.'],
   },
   {
-    name:'Vivienne LaRoche', room:13, era:'1970s', unlockDay:21, interactVerb:'Compliment the Room',
+    name:'Vivienne LaRoche', room:13, era:'1970s', unlockDay:30, interactVerb:'Compliment the Room',
     desc:'B-movie actress from the golden age of drive-in horror. Checked in for a weekend shoot in 1974 and refused to leave after the studio pulled her contract.',
     mood:65, want:'To be recognized. Still.',
     backstory:'Vivienne LaRoche starred in eleven horror films between 1968 and 1973, none of which were particularly good and all of which she was extraordinary in. She checked into The Bellmore during what was supposed to be a comeback project. The project dissolved. She did not. She died in Room 13 in 1981, still believing the right role was coming. Guests occasionally find old film posters in the corridor outside her room that were not there before.',
@@ -1228,7 +1231,7 @@ const ghostUnlockPool = [
     ignoreLine:['Room 13 goes cold. Dramatically cold. She has always understood theatrical effect.','You find a one-star review on the front desk notepad for a film that came out in 1971.','Nothing. Vivienne has been ignored by studio executives. You are a minor inconvenience by comparison.'],
   },
   {
-    name:'Desmond Flux', room:11, era:'1970s', unlockDay:26, interactVerb:'Turn Up the Music',
+    name:'Desmond Flux', room:11, era:'1970s', unlockDay:33, interactVerb:'Turn Up the Music',
     desc:'Disco DJ. Died in 1978 mid set at the hotel\'s New Year\'s Eve party when the lighting rig came down. He is still playing.',
     mood:80, want:'Someone to dance',
     backstory:'Desmond Flux ran the most sought-after New Year\'s party in Portland for three consecutive years. The Bellmore\'s ballroom was packed the night he died. The lighting rig failed at 11:58pm. He was found still holding the record he was about to play. The ballroom has had a subtle pulse in its walls ever since, like a bass line that never resolves, and occasionally, during particularly quiet nights, staff report the distinct smell of dry ice and sweat.',
@@ -1236,7 +1239,7 @@ const ghostUnlockPool = [
     ignoreLine:['A disco ball that is definitely not installed in this hotel casts a single rotating point of light down the corridor.','The jukebox in the lobby plays one song, unprompted, at full volume, then stops.','Desmond is not offended. He is disappointed. There is a difference and you can feel it.'],
   },
   {
-    name:'Jack Morrow', room:5, era:'1950s', unlockDay:35, interactVerb:'Read the Manifesto',
+    name:'Jack Morrow', room:5, era:'1950s', unlockDay:50, interactVerb:'Read the Manifesto',
     desc:'Beat poet and self-described philosopher. Moved into The Bellmore in 1956 with a typewriter, three notebooks, and very strong opinions about jazz, capitalism, and the nature of the road.',
     mood:60, want:'Someone willing to argue with him',
     backstory:'Jack Morrow arrived at The Bellmore with the intention of staying a week and writing something that would change the way Americans thought about freedom. He stayed eleven years. He died in Room 5 in 1967 mid-sentence, which he would have considered appropriate. His typewriter is still there. Occasionally it types by itself. The pages that come out are dense, contradictory, and occasionally brilliant.',
@@ -1244,7 +1247,7 @@ const ghostUnlockPool = [
     ignoreLine:['The typewriter runs at 3am. Loudly. For forty minutes.','A note under your office door: "YOU ARE NOT PAYING ATTENTION." Unsigned.','Nothing. Jack has been dismissed by better critics. You register as noise.'],
   },
   {
-    name:'Lady Ashworth', room:18, era:'1890s', unlockDay:22, interactVerb:'Observe Propriety',
+    name:'Lady Ashworth', room:18, era:'1890s', unlockDay:28, interactVerb:'Observe Propriety',
     desc:'Victorian aristocrat who arrived from London in 1892 for reasons she never disclosed to anyone, including the police who later asked.',
     mood:55, want:'Standards to be maintained',
     backstory:'Lady Constance Ashworth arrived at The Bellmore with six trunks, a lady\'s maid who vanished after the first week, and an air of absolute unquestionable authority. She died in 1898 under circumstances that remain technically unresolved. She considers the entire twentieth century to have been an unfortunate experiment and has strong feelings about the dress code, the menu, the way the staff walks, and the general moral decline of the establishment.',
@@ -1252,7 +1255,7 @@ const ghostUnlockPool = [
     ignoreLine:['Something that sounds like a silver dinner bell rings once from Floor 4. You are not imagining it.','The lobby temperature drops noticeably for about three minutes. Lady Ashworth is expressing displeasure through the only channel available to her.','Nothing outward. But the air on Floor 4 has a quality to it now that it did not have before.'],
   },
   {
-    name:'Professor Aldous Finch', room:17, era:'1900s', unlockDay:28, interactVerb:'Consult the Records',
+    name:'Professor Aldous Finch', room:17, era:'1900s', unlockDay:45, interactVerb:'Consult the Records',
     desc:'Edwardian naturalist who checked in while cataloguing Pacific Northwest flora and fauna. He did not expect to add himself to the list.',
     mood:72, want:'His field notes to be found and preserved',
     backstory:'Professor Aldous Finch of the Royal Geographic Society arrived in 1906 with specimen cases and a methodical mind. He died of a fever in Room 17 in 1907 with his Portland field notes incomplete. He is less interested in being acknowledged as a ghost than in ensuring someone eventually finds and reads his notebooks, which are still in the room. Nobody has found them. This has been going on for over a century.',
@@ -1260,7 +1263,7 @@ const ghostUnlockPool = [
     ignoreLine:['The door to Room 17 sticks. Not jammed. Reluctant.','You find the word "NOTE" scratched very finely into the dust on the Room 17 windowsill.','Nothing aggressive. Professor Finch is a patient man. He simply needs you to look in the right drawer.'],
   },
   {
-    name:'Isaiah Crane', room:4, era:'1890s', unlockDay:16, interactVerb:'Watch the River', prefersSolitude:true,
+    name:'Isaiah Crane', room:4, era:'1890s', unlockDay:20, interactVerb:'Watch the River', prefersSolitude:true,
     desc:'Dockworker from the 1894 flood. The Willamette reached 33.5 feet that June, submerging 250 city blocks. Isaiah was working the docks when the water came.',
     mood:45, want:'Someone to know what the water took',
     backstory:'The Great Flood of 1894 was the worst in Portland\'s recorded history. The Willamette reached 33.5 feet — its highest mark ever — and swallowed 250 downtown blocks whole. Two drawbridges stuck open, splitting the city for days. Isaiah Crane was a dockworker on the Willamette waterfront when the river came over the banks on June 6th. He was thirty-one years old. He has been in Room 4 ever since, and on certain mornings the carpet near the window is inexplicably damp.',
@@ -1268,7 +1271,7 @@ const ghostUnlockPool = [
     ignoreLine:['Room 4 is cold in a way that has nothing to do with the temperature.','A wet handprint appears briefly on the window of Room 4, facing inward. It fades in under a minute.','Nothing. Isaiah Crane has had decades to get used to being overlooked.'],
   },
   {
-    name:'Calvin Dubois', room:21, era:'1940s', unlockDay:20, interactVerb:'Sit With Him',
+    name:'Calvin Dubois', room:21, era:'1940s', unlockDay:26, interactVerb:'Sit With Him',
     desc:'Shipyard worker from Vanport. Came from Louisiana on a wartime labor train in 1943. Built Liberty Ships for Kaiser. Was home on Memorial Day 1948 when the dike broke.',
     mood:55, want:'Someone to know that Vanport was real',
     backstory:'Vanport was Oregon\'s second-largest city — a wartime housing project built in months for Kaiser Shipyard workers, home to 40,000 at its peak including thousands of African Americans who had come from the South on special labor trains. On Memorial Day 1948, the Housing Authority of Portland distributed leaflets that morning: "Dikes are safe at present. You will be warned if necessary." At 4:17pm the railroad dike broke. By nightfall, a city of 18,000 was gone. Calvin Dubois was in his apartment when the water came through the wall. He ended up at The Bellmore because Portland\'s hotels were among the few places required to take in the displaced. He never found permanent housing. He has been in Room 20 ever since. He keeps to himself. He does not make noise. He only asks that you know what happened.',
@@ -1276,7 +1279,7 @@ const ghostUnlockPool = [
     ignoreLine:['Room 20 is dark when it should not be. The bulb is fine.','Nothing happens in Room 20. This is its own kind of heaviness.','Calvin is quiet. He has always been quiet. That was never the problem.'],
   },
   {
-    name:'Thomas Cray', room:1, era:'1880s', unlockDay:33, interactVerb:'Open the Cellar Door', prefersSolitude:true,
+    name:'Thomas Cray', room:1, era:'1880s', unlockDay:55, interactVerb:'Open the Cellar Door', prefersSolitude:true,
     desc:'Vanished from a waterfront saloon in 1887. Portland earned the name "Forbidden City of the West" in that era — whether the tunnels beneath Old Town were truly used for shanghaiing is still debated by historians. Thomas does not remember. He only knows he woke up somewhere else and could not find his way back.',
     mood:35, want:'To know what actually happened to him',
     backstory:'Portland in the 1880s was a rough port city — saloons, crimps, and a waterfront economy built on ships that always needed crews. The tunnels beneath Old Town connected hotel basements to the Willamette docks, used officially for moving cargo out of the rain. Thomas Cray came in from eastern Oregon in the autumn of 1887, stopped at a waterfront tavern, and was never seen again. What happened in the hours between the tavern and wherever he woke up is genuinely unclear — historians have found no evidence the tunnels were systematically used for abduction, but men did vanish, ships did sail short-crewed, and Portland did earn its reputation. Thomas has been in Room 1 since the building was new. He is not angry. He is confused, which is in some ways harder to sit with.',
@@ -1286,10 +1289,21 @@ const ghostUnlockPool = [
 ];
 
 function checkGhostUnlocks() {
+  // Soft cap: never surface more than one new ghost per day-advance, and
+  // keep active social ghosts to a manageable number relative to shift budget.
+  // Player has 8h per shift; each ghost interaction costs ~1.5h. Cap active
+  // social ghosts at 3 until rank 1 (Front Desk), 5 at rank 2, unlimited at GM+.
+  const socialCap = G.rank >= 2 ? 99 : G.rank >= 1 ? 5 : 3;
+  const currentSocial = G.ghosts.filter(g => !g.prefersSolitude).length;
+
+  let newThisDay = 0;
   ghostUnlockPool.forEach(ghost => {
     const alreadyKnown = G.ghosts.find(g=>g.name===ghost.name);
     if (!alreadyKnown && G.day >= ghost.unlockDay) {
-      G.ghosts.push({...ghost, id:++G.ghostId});
+      // Respect the social cap for non-solitude ghosts; solitude ghosts always unlock freely
+      if (!ghost.prefersSolitude && (currentSocial + newThisDay) >= socialCap) return;
+      newThisDay++;
+      G.ghosts.push({...ghost, id:++G.ghostId, interactedToday:false});
       log('Something has shifted on Floor '+ Math.ceil(ghost.room/4)+'. A new presence at The Bellmore.','ghost');
       showResult(
         'You become aware of something on Floor '+Math.ceil(ghost.room/4)+'.<br><br>The staff will not discuss it. The guests have not noticed yet.<br><br><em>A new permanent resident has made themselves known.</em>',
@@ -1513,7 +1527,7 @@ const ACTION_BASE_UNITS = {
   checkin: hoursToUnits(2), // 2.0h (without bellcart)
   stopby: hoursToUnits(2),  // 2.0h
   task: hoursToUnits(2),    // 2.0h
-  ghost: hoursToUnits(2),   // 2.0h
+  ghost: hoursToUnits(1),   // 1.0h — faster than guest work, but ghosts don't tip
   request: hoursToUnits(3)  // 3.0h
 };
 
@@ -1800,6 +1814,21 @@ function checkoutGuest(id) {
 // ────────────────────────────────────────────
 // GHOST ACTIONS
 // ────────────────────────────────────────────
+function ghostAttentionTolerance(g) {
+  // How many days a ghost can go without attention before mood starts decaying.
+  // Based on current mood — a settled ghost can wait; a restless one cannot.
+  if (g.prefersSolitude) return 99; // solitude ghosts never need attendance
+  if (g.mood >= 75) return 3;
+  if (g.mood >= 50) return 2;
+  return 1; // below 50 mood — needs attention each day
+}
+
+function ghostIsOverdue(g) {
+  if (g.prefersSolitude) return false;
+  const days = g.daysSinceAttended || 0;
+  return days >= ghostAttentionTolerance(g);
+}
+
 function interactGhost(id) {
   const g = G.ghosts.find(x=>x.id===id);
   if (!g) return;
@@ -1811,13 +1840,16 @@ function interactGhost(id) {
   if (!canAffordAction(ghUnits)) { showResult('You need at least '+unitsLabel(ghUnits+OVERHEAD_MAX_UNITS)+' to tend to a permanent resident.','neutral',[{label:'Not Enough Time',neg:true}]); return; }
   const ghCost = chargeAction(ghUnits);
   g.interactedToday = true;
+  g.daysSinceAttended = 0; // reset the neglect counter
   const boost = 10+Math.floor(Math.random()*12);
   g.mood = Math.min(100, g.mood+boost);
   addXP(1);
   const line = g.sootheLine[Math.floor(Math.random()*g.sootheLine.length)];
   if (window.AudioFX) window.AudioFX.playGhost();
   log('Tended to '+g.name+'. Mood improved.','ghost');
-  showResult(line,'ghost',[{label:'+'+boost+' Mood',pos:true},{label:'+1 XP',pos:true}]);
+  const tolerance = ghostAttentionTolerance(g);
+  const nextVisitNote = tolerance >= 3 ? 'They should be settled for a few days.' : tolerance >= 2 ? 'Check back in a day or two.' : 'They will want attention again tomorrow.';
+  showResult(line,'ghost',[{label:'+'+boost+' Mood',pos:true},{label:'+1 XP',pos:true},{label:nextVisitNote,pos:false}]);
   renderAll();
 }
 
@@ -1829,6 +1861,7 @@ function leaveAlone(id) {
   if (g.prefersSolitude) {
     // Solitude-preferring ghosts always react positively to being left alone
     g.mood = Math.min(100, g.mood+8);
+    g.daysSinceAttended = 0; // leaving them alone IS the right action
     log('Left '+g.name+' alone. They preferred it that way.','ghost');
     showResult(line,'ghost',[{label:'+8 Mood',pos:true}]);
   } else {
@@ -1852,20 +1885,34 @@ function leaveAlone(id) {
 }
 
 function autoNeglectGhost(g) {
-  // Solitude-preferring ghosts are fine being left alone — no penalty, gentle mood boost.
+  // Solitude-preferring ghosts are fine being left alone.
   if (g.prefersSolitude) {
     g.mood = Math.min(100, g.mood+5);
-    g.attendedSolitude = true; // tells the drift loop to use -1 not -6
+    g.attendedSolitude = true;
     log(g.name+' was left undisturbed. They preferred it.','ghost');
-    return null; // no ignore line for solitude ghosts
+    return null;
   }
-  // All other ghosts expect attention.
-  g.mood = Math.max(0, g.mood - 10);
-  changeRep(-2, g.name+' was neglected overnight');
-  log(g.name+' was neglected — no one attended to them today.','bad');
-  // Return the ignore line for display
-  const line = g.ignoreLine ? g.ignoreLine[Math.floor(Math.random()*g.ignoreLine.length)] : null;
-  return line ? { name: g.name, line: line } : null;
+  // Increment days since last attended
+  g.daysSinceAttended = (g.daysSinceAttended || 0) + 1;
+  const tolerance = ghostAttentionTolerance(g);
+  const overdue = g.daysSinceAttended > tolerance;
+
+  if (overdue) {
+    // Genuinely neglected — mood and potentially rep
+    g.mood = Math.max(0, g.mood - 8);
+    if (g.mood < 30) {
+      changeRep(-2, g.name+' was neglected and is now restless overnight');
+      log(g.name+' has been neglected too long — restless and getting worse.','bad');
+    } else {
+      log(g.name+' has gone '+g.daysSinceAttended+' days without attention. Mood is slipping.','neutral');
+    }
+    const line = g.ignoreLine ? g.ignoreLine[Math.floor(Math.random()*g.ignoreLine.length)] : null;
+    return line ? { name: g.name, line: line, days: g.daysSinceAttended } : null;
+  } else {
+    // Within tolerance — no penalty, they're fine
+    log(g.name+' was not attended to, but is settled enough to wait.','ghost');
+    return null;
+  }
 }
 
 function ghostHistory(id) {
@@ -1956,10 +2003,11 @@ function advanceDay() {
     }
   });
 
-  // Ghost mood drift — tended/solitude-left = -1/night, neglected = -6/night
+  // Ghost mood drift — only decays when genuinely overdue for attention
   G.ghosts.forEach(gh=>{
+    const overdue = ghostIsOverdue(gh); // checks daysSinceAttended vs tolerance
     // attendedSolitude is set by autoNeglectGhost for solitude ghosts left undisturbed
-    const drift = (gh.interactedToday || gh.attendedSolitude) ? -1 : -6;
+    const drift = (gh.interactedToday || gh.attendedSolitude) ? -1 : overdue ? -4 : 0;
     gh.mood = Math.max(5, Math.min(95, gh.mood + drift));
     gh.attendedSolitude = false; // clear for next day
     if (owned('incense') && gh.name==='Agnes Bleecker') gh.mood = Math.min(95, gh.mood+10);
@@ -2114,7 +2162,6 @@ function gameOver(cause) {
   } else {
     headline = 'TERMINATED';
     const loss = G.lastRepLoss || '';
-    let msg;
     if (loss.includes('resident') || loss.includes('ghost') || loss.includes('Floor')) {
       msg = 'The official reason given was "failure to maintain guest comfort standards." The real reason was several consecutive nights of The Bellmore sounding like something you cannot explain. Management did not investigate. They just let you go.';
     } else if (loss.includes('furious') || loss.includes('checkout') || loss.includes('disappointed')) {
@@ -2174,13 +2221,14 @@ function renderAll() {
     guestsBadge.style.display = 'none';
   }
 
-  // Ghosts: badge = number of ghosts who haven't been tended to today (restless ones shown with !, others show count)
+  // Ghosts: badge = number of ghosts who are overdue for attention (not just untended today)
   const untendedGhosts = G.ghosts.filter(g => !g.interactedToday && !g.prefersSolitude);
   const restlessCount = untendedGhosts.filter(g => g.mood < 35).length;
+  const overdueCount = G.ghosts.filter(g => ghostIsOverdue(g)).length;
   if (restlessCount > 0) {
     ghostsBadge.textContent = '!'; ghostsBadge.style.display = 'block';
-  } else if (untendedGhosts.length > 0) {
-    ghostsBadge.textContent = untendedGhosts.length; ghostsBadge.style.display = 'block';
+  } else if (overdueCount > 0) {
+    ghostsBadge.textContent = overdueCount; ghostsBadge.style.display = 'block';
   } else {
     ghostsBadge.style.display = 'none';
   }
@@ -2333,11 +2381,27 @@ function renderAll() {
     const ms=moodState(g.mood); const mc=moodColor(g.mood);
     const verb = g.interactVerb || 'Tend To';
     const canInteract = !g.interactedToday && canAffordAction(ACTION_BASE_UNITS.ghost);
-    return `<div class="card cghost">
+    const overdue = ghostIsOverdue(g);
+    const days = g.daysSinceAttended || 0;
+    const tolerance = ghostAttentionTolerance(g);
+    // Urgency label shown below the mood bar
+    let urgencyHtml = '';
+    if (g.prefersSolitude) {
+      urgencyHtml = '<div style="font-size:10px;color:var(--ghost);margin-top:4px;font-style:italic">Prefers solitude. Leave them be.</div>';
+    } else if (g.interactedToday) {
+      urgencyHtml = '<div style="font-size:10px;color:var(--green-bright);margin-top:4px;font-style:italic">\u2713 Attended to today</div>';
+    } else if (overdue) {
+      urgencyHtml = '<div style="font-size:10px;color:var(--red-bright);margin-top:4px;font-style:italic">\u26a0 Overdue. '+days+' day'+(days!==1?'s':'')+' without attention.</div>';
+    } else {
+      const daysLeft = tolerance - days;
+      urgencyHtml = '<div style="font-size:10px;color:var(--ink-faint);margin-top:4px;font-style:italic">Settled. Can wait '+(daysLeft > 1 ? daysLeft+' more days.' : 'until tomorrow.')+'</div>';
+    }
+    return `<div class="card cghost ${overdue && !g.prefersSolitude ? 'ghost-overdue' : ''}">
       <div class="card-head"><div class="card-name ghost-shimmer">${g.name}</div><span class="ctag ctag-${ms}">${ms}</span></div>
       <div class="card-desc">${g.desc}</div>
       <div style="font-size:10px;color:var(--ink-faint);margin-top:5px;font-style:italic">Room ${g.room} · ${g.era} · Wants: ${g.want}</div>
       <div class="mood-row" style="margin-top:8px"><span class="mood-label">Mood</span><div class="mood-track"><div class="mood-fill" style="width:${g.mood}%;background:${mc}"></div></div><span class="mood-pct" style="color:${mc}">${g.mood}%</span></div>
+      ${urgencyHtml}
       <div class="card-actions">
         <button class="btn btn-ghost" onclick="interactGhost(${g.id})" ${canInteract?'':'disabled'}>${g.interactedToday?'Done Today':verb} ${canInteract?'<span class="cost-badge">'+unitsLabel(ACTION_BASE_UNITS.ghost+OVERHEAD_MAX_UNITS)+'</span>':''}</button>
         ${!g.interactedToday ? '<button class="btn btn-dim" onclick="leaveAlone('+g.id+')">Leave Be</button>' : ''}
