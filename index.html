@@ -2265,10 +2265,12 @@ function renderAll() {
     todayBadge.style.display = 'none';
   }
 
-  // Guests: badge = number of arrivals waiting to be checked in
+  // Guests: badge = arrivals waiting to check in + guests ready to check out
   const arrivalCount = G.arrivals.length;
-  if (arrivalCount > 0) {
-    guestsBadge.textContent = arrivalCount; guestsBadge.style.display = 'block';
+  const checkoutCount = G.guests.filter(g => g.daysRemaining <= 0).length;
+  const guestBadgeTotal = arrivalCount + checkoutCount;
+  if (guestBadgeTotal > 0) {
+    guestsBadge.textContent = guestBadgeTotal; guestsBadge.style.display = 'block';
   } else {
     guestsBadge.style.display = 'none';
   }
