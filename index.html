@@ -1612,7 +1612,7 @@ function addXP(xp) {
         setTimeout(() => window.AudioFX.playBell({ freq: 880, decay: 1.8 }), 280);
         setTimeout(() => window.AudioFX.playBell({ freq: 1047, decay: 2.0 }), 520);
       }
-      showResult(msgs[newRank] || 'You have been promoted.', 'good', [{label:'PROMOTED',pos:true},{label:'Now: '+G.rankNames[newRank],pos:true}]);
+      showResult(msgs[newRank] || 'You have been promoted.', 'good', [{label:'PROMOTED',pos:true},{label:G.rankNames[newRank],pos:true}]);
     }, 600);
   }
 }
@@ -1749,12 +1749,15 @@ function processCheckIn(id) {
   if (!guest) return;
   const g = G.guests.find(x=>x.name===guest.name);
   if (g) g.happiness = Math.min(100, g.happiness + 8);
-  addXP(2); const gained = earn(3);
+  addXP(2);
+  // Desk clerk earns a check-in gratuity — more than a bellhop, scaled by guest type
+  const tipBase = a.tag==='vip' ? 18 : a.tag==='trouble' ? 6 : a.tag==='sensitive' ? 10 : 12;
+  const gained = earn(tipBase);
   if (window.AudioFX) window.AudioFX.playBell();
   showResult(
-    'You process <strong>'+guest.name+'</strong>\'s reservation, confirm their room, and dispatch a bellhop with their luggage. Professional. Efficient. Exactly right.',
+    'You process <strong>'+guest.name+'</strong>\'s reservation, confirm their room, and see their luggage dispatched. Professional. Efficient. Exactly right.',
     'good',
-    [{label:'Checked In',pos:true},{label:'+8% Happiness',pos:true}]
+    [{label:'Checked In',pos:true},{label:'+'+fmt(tipBase)+' Tip',pos:true},{label:'+8% Happiness',pos:true}]
   );
   renderAll();
 }
