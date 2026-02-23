@@ -363,6 +363,7 @@
   .req-reward { color: var(--green-bright); white-space: nowrap; font-weight: bold; font-size: 10px; }
   .req-cost { color: var(--gold); white-space: nowrap; font-size: 10px; }
   .guest-maxed { border-color: rgba(240,192,64,.5); box-shadow: 0 0 12px rgba(240,192,64,.1); }
+  .guest-checkout-ready { border-color: rgba(201,168,76,.45); border-style: dashed; }
 
   /* COST BADGE */
   .cost-badge { display: inline-block; font-size: 9px; color: var(--gold); background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.3); border-radius: 3px; padding: 1px 6px; margin-left: 4px; }
@@ -1800,13 +1801,58 @@ function fulfillRequest(id) {
 function checkoutGuest(id) {
   const g = G.guests.find(x=>x.id===id);
   if (!g) return;
+  if (g.daysRemaining > 0) {
+    showResult('<strong>'+g.name+'</strong> is not due to leave yet. Their reservation runs through the end of their stay.','neutral',[{label:'Still In-House'}]);
+    return;
+  }
+
+  // Bellhop: carry bags to the door, small flat tip, no formal checkout authority
+  if (G.rank === 0) {
+    const bellTip = g.happiness >= 60 ? 4 : 2;
+    earn(bellTip);
+    addXP(1);
+    log(g.name+' seen out by bellhop. Tip: '+fmt(bellTip)+'.', 'neutral');
+    showResult(
+      'You carry <strong>'+g.name+'\'s</strong> bags to the door and hold it open. They press '+fmt(bellTip)+' into your hand without much ceremony. The paperwork will be handled by the desk.',
+      'neutral',
+      [{label:'Bags Out',pos:true},{label:'+'+fmt(bellTip)+' Tip',pos:true}]
+    );
+    G.guests = G.guests.filter(x=>x.id!==id);
+    renderAll();
+    return;
+  }
+
+  // Front Desk Clerk and above: full formal checkout
   const bonusBase = owned('tipjar')?6:0;
   const tipBase = g.happiness>=90?20+bonusBase:g.happiness>=70?10+bonusBase:g.happiness>=50?3:0;
-  const tip = earn(tipBase);
-  if (g.happiness>=85) changeRep(4);
-  else if (g.happiness>=60) changeRep(1);
-  else changeRep(-4,'a guest checked out and posted a negative review');
-  log(g.name+' checked out. Happiness: '+g.happiness+'%. Tip: '+fmt(tipBase)+'.', tipBase>8?'good':g.happiness<50?'bad':'neutral');
+  earn(tipBase);
+  let repChange, outcome, type;
+  if (g.happiness>=85) {
+    repChange = 4; changeRep(4);
+    outcome = 'They settle their bill without a word of complaint, fold a '+fmt(tipBase)+' into your hand, and say they will be back. You believe them.';
+    type = 'good';
+  } else if (g.happiness>=60) {
+    repChange = 1; changeRep(1);
+    outcome = tipBase>0
+      ? 'A quiet, professional departure. '+fmt(tipBase)+' left on the counter. No complaints registered.'
+      : 'A quiet departure. No complaints, no tip. Could have gone either way.';
+    type = 'neutral';
+  } else if (g.happiness>=40) {
+    changeRep(-4,'a disappointed checkout');
+    outcome = 'They are polite about it, which somehow makes it worse. No tip. They will not be returning.';
+    type = 'bad';
+  } else {
+    changeRep(-8,'a guest who left furious');
+    outcome = 'They drop their key on the desk without a word. The silence is not a good sign. Expect a review.';
+    type = 'bad';
+  }
+  const pills = [
+    {label: g.happiness>=60 ? 'Checked Out ✓' : 'Checked Out', pos: g.happiness>=85, neg: g.happiness<40},
+    ...(tipBase>0 ? [{label:'+'+fmt(tipBase)+' Tip', pos:true}] : []),
+    ...(repChange>0 ? [{label:'+'+repChange+' Rating', pos:true}] : (repChange<0 ? [{label:repChange+' Rating', neg:true}] : []))
+  ];
+  log(g.name+' checked out. Mood: '+g.happiness+'%. Tip: '+fmt(tipBase)+'.', type);
+  showResult('<strong>'+g.name+'</strong> checks out of Room '+g.room+'.<br><br><em>'+outcome+'</em>', type, pills);
   G.guests = G.guests.filter(x=>x.id!==id);
   renderAll();
 }
@@ -1968,7 +2014,7 @@ function buyUpgrade(uid) {
     );
   } else {
     log('Purchased: '+u.name,'good');
-    showResult('<strong>'+u.name+'</strong> installed and active.<br><br>'+u.desc,'good',[{label:'-$'+cost,neg:true},{label:'Active',pos:true}]);
+    showResult('<strong>'+u.name+'</strong> purchased.<br><br>'+u.desc,'good',[{label:'-$'+cost,neg:true},{label:'Active',pos:true}]);
   }
   renderAll();
 }
@@ -2072,23 +2118,27 @@ function advanceDay() {
   });
 
   // In-house unhappiness — ongoing drain for miserable guests
-  const toCheckout = [];
+  // Guests whose stay is over but not yet processed leave on their own after one more day (and are not happy about it)
+  const abandonedCheckout = [];
   G.guests.forEach(g=>{
     if (g.happiness < 30) { changeRep(-6, 'a guest in visible distress still on the premises'); log(g.name+' is miserable. They are telling other guests.','bad'); }
     else if (g.happiness < 50) { changeRep(-2, 'unhappy guest'); }
-    g.daysRemaining = (g.daysRemaining||2) - 1;
-    if (g.daysRemaining <= 0) toCheckout.push(g.id);
+    if (g.daysRemaining <= 0) {
+      // Already overdue for checkout — they have lost patience and left on their own
+      abandonedCheckout.push(g.id);
+    } else {
+      g.daysRemaining = (g.daysRemaining||2) - 1;
+      if (g.daysRemaining <= 0) {
+        log(g.name+'\'s stay is complete. They are waiting to check out at the front desk.', 'neutral');
+      }
+    }
   });
-  toCheckout.forEach(id=>{
+  abandonedCheckout.forEach(id=>{
     const g = G.guests.find(x=>x.id===id);
     if (!g) return;
-    const bonusBase = owned('tipjar') ? 6 : 0;
-    const tipBase = g.happiness>=90 ? 25+bonusBase : g.happiness>=70 ? 14+bonusBase : g.happiness>=50 ? 4 : 0;
-    earn(tipBase);
-    if (g.happiness >= 85) { changeRep(5); log(g.name+' checked out delighted.','good'); }
-    else if (g.happiness >= 60) { changeRep(1); log(g.name+' checked out satisfied.','neutral'); }
-    else if (g.happiness >= 40) { changeRep(-5, 'a disappointed checkout'); log(g.name+' checked out disappointed.','bad'); }
-    else { changeRep(-10, 'a guest who left furious'); log(g.name+' checked out furious. Expect a review.','bad'); }
+    // No tip — they left without a proper farewell. Reputation hit regardless of mood.
+    changeRep(-3, 'a guest who left without being seen out');
+    log(g.name+' left without being checked out. No one saw them go.','bad');
     G.guests = G.guests.filter(x=>x.id!==id);
   });
 
@@ -2351,7 +2401,10 @@ function renderAll() {
     gl.innerHTML = G.guests.map(g=>{
       const mc = moodColor(g.happiness);
       const tag = g.tag?`<span class="ctag ctag-${g.tag}">${g.tagLabel}</span>`:'';
-      const stayInfo = `<span style="font-size:10px;color:var(--ink-faint)">${g.daysRemaining} day${g.daysRemaining!==1?'s':''} remaining</span>`;
+      const readyToLeave = g.daysRemaining <= 0;
+      const stayInfo = readyToLeave
+        ? `<span style="font-size:10px;color:var(--gold);font-style:italic">Stay complete. Awaiting checkout at the desk.</span>`
+        : `<span style="font-size:10px;color:var(--ink-faint)">${g.daysRemaining} day${g.daysRemaining!==1?'s':''} remaining</span>`;
       const reqHtml = !g.reqDone
         ? `<div class="req-badge">
              <span class="req-text">Request: ${g.request}</span>
@@ -2359,19 +2412,22 @@ function renderAll() {
              <span class="req-reward">+$${g.reqReward}</span>
            </div>`
         : `<div style="font-size:10px;color:var(--green-bright);margin-top:6px;font-style:italic">✓ Request fulfilled</div>`;
-      return `<div class="card cguest ${g.happiness>=100?'guest-maxed':''}">
+      return `<div class="card cguest ${g.happiness>=100?'guest-maxed':''}${readyToLeave?' guest-checkout-ready':''}">
         <div class="card-head"><div class="card-name">Rm ${g.room} · ${g.name}</div>${tag}</div>
         <div class="card-desc">${g.desc}</div>
         ${stayInfo}
         ${reqHtml}
         <div class="mood-row"><span class="mood-label">Mood</span><div class="mood-track"><div class="mood-fill" style="width:${g.happiness}%;background:${mc}"></div></div><span class="mood-pct" style="color:${mc}">${g.happiness}%</span></div>
         <div class="card-actions">
-          <button class="btn btn-gold" onclick="stopByRoom(${g.id})" ${g.attendedToday||!canAffordAction(ACTION_BASE_UNITS.stopby)?'disabled':''}>
+          ${!readyToLeave?`<button class="btn btn-gold" onclick="stopByRoom(${g.id})" ${g.attendedToday||!canAffordAction(ACTION_BASE_UNITS.stopby)?'disabled':''}>
             ${g.happiness>=100?'⭐ VIP':g.attendedToday?'Done Today':'Stop By Room'}
             ${!g.attendedToday?'<span class="cost-badge">'+unitsLabel(ACTION_BASE_UNITS.stopby+OVERHEAD_MAX_UNITS)+'</span>':''}
-          </button>
-          ${!g.reqDone?`<button class="btn btn-purple" onclick="fulfillRequest(${g.id})" ${g.reqFulfilledToday||!canAffordAction(ACTION_BASE_UNITS.request)?'disabled':''}>See to Request <span class="cost-badge">${unitsLabel(ACTION_BASE_UNITS.request+OVERHEAD_MAX_UNITS)}</span></button>`:''}
-          <button class="btn btn-dim" onclick="checkoutGuest(${g.id})">Check Out</button>
+          </button>`:''}
+          ${!readyToLeave&&!g.reqDone?`<button class="btn btn-purple" onclick="fulfillRequest(${g.id})" ${g.reqFulfilledToday||!canAffordAction(ACTION_BASE_UNITS.request)?'disabled':''}>See to Request <span class="cost-badge">${unitsLabel(ACTION_BASE_UNITS.request+OVERHEAD_MAX_UNITS)}</span></button>`:''}
+          ${readyToLeave ? (G.rank === 0
+            ? `<button class="btn btn-dim" onclick="checkoutGuest(${g.id})">Carry Bags Out</button>`
+            : `<button class="btn btn-gold" onclick="checkoutGuest(${g.id})">Process Checkout</button>`
+          ) : ''}
         </div></div>`;
     }).join('');
   }
@@ -2454,7 +2510,7 @@ function renderAll() {
       <div class="upgrade-name">${u.name}</div>
       <div class="upgrade-desc">${u.desc}</div>
       ${u.owned
-        ? '<div style="font-size:10px;color:var(--green-bright);letter-spacing:1px">✓ INSTALLED</div>'
+        ? '<div style="font-size:10px;color:var(--green-bright);letter-spacing:1px">✓ PURCHASED</div>'
         : `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
              <div style="font-size:12px;color:var(--green-bright);font-weight:bold">$${u.cost}</div>
              <button class="btn ${G.tips>=u.cost?'btn-purple':'btn-dim'}" onclick="buyUpgrade('${u.id}')" style="flex:0;min-width:90px">${G.tips>=u.cost?'Purchase ('+fmt(u.cost)+')':'Need '+fmt(u.cost)}</button>
