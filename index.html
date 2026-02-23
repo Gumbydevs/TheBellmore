@@ -42,9 +42,11 @@
   .hotel-sub { font-size: 9px; color: var(--ink-faint); letter-spacing: 2px; text-align: center; margin-top: 1px; font-style: italic; }
   .star-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
   .stars { display: flex; gap: 3px; }
-  .star { font-size: 18px; transition: all 0.3s; }
+  .star { font-size: 18px; transition: all 0.3s; position: relative; display: inline-block; }
   .star.on { color: var(--gold-bright); filter: drop-shadow(0 0 3px rgba(240,192,64,0.5)); }
   .star.off { color: var(--paper-mid); }
+  .star.partial { color: var(--paper-mid); }
+  .star.partial .star-fill { position: absolute; left: 0; top: 0; overflow: hidden; color: var(--gold-bright); filter: drop-shadow(0 0 3px rgba(240,192,64,0.5)); white-space: nowrap; }
   .star-tier { font-size: 11px; color: var(--gold); font-family: 'Playfair Display', serif; }
   .rep-bar-track { height: 4px; background: var(--paper-light); border-radius: 3px; overflow: hidden; margin: 6px 16px 0; border: 1px solid var(--border); }
   @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -770,7 +772,7 @@
       </div>
     </div>
   </div>
-  <div style="margin-top:14px;font-size:10px;color:var(--ink-faint);letter-spacing:2px;font-style:italic">v0.9.2 · Public Beta</div>
+  <div style="margin-top:14px;font-size:10px;color:var(--ink-faint);letter-spacing:2px;font-style:italic">v0.9.3 · Public Beta</div>
   </div>
 
 <!-- GAME OVER -->
@@ -824,7 +826,7 @@
   </div>
   <div class="sidebar-footer" style="display:none">
     © 2026 Gumbysoft<br>
-    <span style="opacity:.6">v0.9.2 · Public Beta</span>
+    <span style="opacity:.6">v0.9.3 · Public Beta</span>
   </div>
 </div>
 
@@ -1577,7 +1579,7 @@ function checkWarnings() {
       'bad', [{label:'Second Warning',neg:true}]
     );
     log('Second formal warning from management.','bad');
-  } else if (G.rep <= 35 && w < 1) {
+  } else if (G.rep <= 35 && w < 1 && G.day > 3) {
     G.warningLevel = 1;
     showResult(
       'A note appears in your staff folder.<br><br><em>"Guest satisfaction has declined. Please be advised that continued performance below standard will be reviewed."</em><br><br>It is the polite version. The impolite version comes next.',
@@ -2289,8 +2291,26 @@ function renderAll() {
   document.getElementById('rankFill').style.width = xpPct+'%';
   document.getElementById('rankProg').textContent = G.rank<3?G.rankXP+'/'+G.rankThresh[G.rank]+' XP':'MAX';
 
+  // Fractional star display — maps rep 0-100 across 5 stars (thresholds: 1★@0,2★@35,3★@50,4★@70,5★@88)
+  const starThresh = [0, 35, 50, 70, 88, 100];
+  const fracStars = Math.max(0, Math.min(5, (() => {
+    const s = repToStars(G.rep);
+    const lo = starThresh[s-1], hi = starThresh[s];
+    return (s - 1) + (G.rep - lo) / (hi - lo);
+  })()));
   let starHtml = '';
-  for (let i=1;i<=5;i++) starHtml+=`<span class="star ${i<=stars?'on':'off'}">★</span>`;
+  for (let i = 1; i <= 5; i++) {
+    const fill = Math.max(0, Math.min(1, fracStars - (i - 1)));
+    if (fill >= 0.88) {
+      starHtml += `<span class="star on">&#9733;</span>`;
+    } else if (fill >= 0.5) {
+      starHtml += `<span class="star partial">&#9733;<span class="star-fill" style="width:65%">&#9733;</span></span>`;
+    } else if (fill >= 0.2) {
+      starHtml += `<span class="star partial">&#9733;<span class="star-fill" style="width:35%">&#9733;</span></span>`;
+    } else {
+      starHtml += `<span class="star off">&#9733;</span>`;
+    }
+  }
   document.getElementById('starDisplay').innerHTML = starHtml;
   document.getElementById('starTierWord').textContent = starTiers[stars];
   document.getElementById('repBar').style.cssText = 'width:'+repBarPct(G.rep)+'%;background:'+repBarColor(G.rep);
