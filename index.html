@@ -986,7 +986,7 @@ const upgradeDefs = [
   { id:'press', name:'Local Press Contact', cost:50, desc:'Bad reviews hit 50% softer. Someone at the Oregonian owes you.' },
   { id:'auditor', name:'Hire a Night Auditor', cost:60, desc:'Incomplete tasks no longer cost hotel rating overnight.' },
   { id:'bellcart', name:'New Bell Cart', cost:35, desc:'Checking in guests costs 0 hours instead of 1. First impressions, faster.' },
-  { id:'buyhotel', name:'Acquire the Property', cost:0, desc:'Purchase The Bellmore outright. The deed transfers to your name. You collect a share of daily hotel revenue on top of tips, and the permanent residents become your legal responsibility. Entirely.', special:true },
+  { id:'buyhotel', name:'Acquire the Property', cost:0, desc:'Put down the deposit and sign the purchase agreement. The previous owner has been looking for a way out for years. The remaining balance is paid in weekly instalments from hotel revenue. Miss two payments and the deed reverts. The permanent residents are not mentioned in the contract. They did not need to be.', special:true },
 ];
 
 const guestPool = [
@@ -1504,8 +1504,8 @@ function earn(amount) {
 function fmt(n) { return '$'+Math.round(n).toLocaleString(); }
 
 function hotelPrice() {
-  const prices = {1:75000, 2:250000, 3:750000, 4:2500000, 5:8000000};
-  return prices[repToStars(G.rep)] || 75000;
+  const prices = {1:1500, 2:3000, 3:5000, 4:9000, 5:15000};
+  return prices[repToStars(G.rep)] || 1500;
 }
 function getSeason(day) { return seasons[Math.floor(((day-1)%120)/30)]; }
 
@@ -1992,7 +1992,7 @@ function buyUpgrade(uid) {
   const cost = uid === 'buyhotel' ? hotelPrice() : u.cost;
   if (G.tips < cost) {
     if (uid === 'buyhotel') {
-      showResult('The Bellmore is currently valued at '+fmt(cost)+'. You have '+fmt(G.tips)+'. You are '+fmt(cost-G.tips)+' short.','neutral',[{label:'Not Enough',neg:true}]);
+      showResult('The down payment on The Bellmore at its current standing is '+fmt(cost)+'. You have '+fmt(G.tips)+'. You are '+fmt(cost-G.tips)+' short of closing the deal.','neutral',[{label:'Not Enough',neg:true}]);
     } else {
       showResult('You need '+fmt(cost)+' for <strong>'+u.name+'</strong>. You have '+fmt(G.tips)+'. You are '+fmt(cost-G.tips)+' short.','neutral',[{label:'Not Enough',neg:true}]);
     }
@@ -2001,11 +2001,16 @@ function buyUpgrade(uid) {
   G.tips = Math.max(0, G.tips - cost);
   u.owned = true;
   if (uid === 'buyhotel') {
+    const fullPrice = hotelPrice() * 4; // down payment was 25%
+    G.mortgageTotal = fullPrice;
+    G.mortgagePaid = cost; // down payment already made
+    G.mortgageMissed = 0;
+    G.mortgagePayment = Math.ceil((fullPrice - cost) / 14); // pay off over 14 weeks
     log('The Bellmore is yours. For better or worse.','good');
     showResult(
-      '"<em>I\'m buying my own hotel!</em>"<br><br>You actually say it out loud. The previous owner, already halfway out the door, turns back with an expression you cannot fully interpret.<br><br>The paperwork is signed. The deed is in your name. The building, the staff, the guests, the permanent residents. All of it.<br><br>The ceiling is gone. Five stars is now possible. Good luck.',
+      '"<em>I\'m buying my own hotel!</em>"<br><br>You actually say it out loud. The previous owner, already halfway out the door, turns back with an expression you cannot fully interpret.<br><br>The paperwork is signed. The deed is in your name. The remaining balance of '+fmt(fullPrice - cost)+' is due in weekly instalments of '+fmt(G.mortgagePayment)+'. Miss two payments and it reverts.<br><br>The ceiling is gone. Five stars is now possible. Good luck.',
       'good',
-      [{label:'Owner',pos:true},{label:'5 Stars Unlocked',pos:true},{label:'Revenue Begins Tonight',pos:true}]
+      [{label:'Owner',pos:true},{label:'5 Stars Unlocked',pos:true},{label:'Payments: '+fmt(G.mortgagePayment)+'/wk',pos:true}]
     );
   } else if (uid === 'passkey') {
     log('The master passkey is in your hand. Room 12 is no longer a question.','ghost');
@@ -2034,11 +2039,75 @@ function advanceDay() {
   // Lobby flowers upgrade
   if (owned('flowers')) { changeRep(4); log('Lobby flowers: +4 hotel rating.','good'); }
 
+  // Weekly salary — paid every 7 days for non-owner staff
+  if (!owned('buyhotel') && G.day % 7 === 0) {
+    const salaries = { 0: 120, 1: 200, 2: 350 };
+    const salary = salaries[G.rank] || 120;
+    const rankTitles = { 0: 'Bellhop', 1: 'Front Desk Clerk', 2: 'General Manager' };
+    earn(salary);
+    log('Weekly wages: +'+fmt(salary)+' from The Bellmore payroll.', 'good');
+    showResult(
+      'End of the week. Your pay envelope is at the front desk.<br><br><em>'+fmt(salary)+' from hotel payroll, as '+rankTitles[G.rank]+'.</em><br><br>Tips are yours to keep on top.',
+      'good',
+      [{label:'Weekly Pay', pos:true},{label:'+'+fmt(salary), pos:true}]
+    );
+  }
+
   // Hotel ownership revenue
   if (owned('buyhotel')) {
     const revenueBase = 500 + (G.guests.length * 200) + (repToStars(G.rep) * 300);
     const revenue = earn(revenueBase);
     log('Hotel revenue: +'+fmt(revenueBase)+' from overnight operations.','good');
+  }
+
+  // Weekly mortgage payment — due every 7 days while balance remains
+  if (owned('buyhotel') && G.day % 7 === 0 && G.mortgageTotal && G.mortgagePaid < G.mortgageTotal) {
+    const remaining = G.mortgageTotal - G.mortgagePaid;
+    const payment = Math.min(G.mortgagePayment, remaining);
+    if (G.tips >= payment) {
+      G.tips -= payment;
+      G.mortgagePaid += payment;
+      G.mortgageMissed = 0;
+      const stillOwed = G.mortgageTotal - G.mortgagePaid;
+      if (stillOwed <= 0) {
+        log('Mortgage paid in full. The Bellmore is yours outright.','good');
+        showResult(
+          'The final payment clears. The solicitor sends a brief note confirming the balance is settled.<br><br><em>The Bellmore is yours. Fully, finally, and without condition.</em><br><br>The permanent residents seem to sense it. The building is quiet in a way it has not been before.',
+          'good',
+          [{label:'Mortgage Cleared',pos:true},{label:'Full Ownership',pos:true}]
+        );
+      } else {
+        log('Mortgage payment made: '+fmt(payment)+'. Balance remaining: '+fmt(stillOwed)+'.','neutral');
+        showResult(
+          'Weekly mortgage payment deducted.<br><br><em>'+fmt(payment)+' paid. '+fmt(stillOwed)+' remaining on the agreement.</em>',
+          'neutral',
+          [{label:'-'+fmt(payment)+' Payment',neg:true},{label:'Balance: '+fmt(stillOwed)}]
+        );
+      }
+    } else {
+      G.mortgageMissed = (G.mortgageMissed || 0) + 1;
+      if (G.mortgageMissed >= 2) {
+        // Repossession — strip ownership, demote to GM
+        const hotelUpgrade = G.upgrades.find(x=>x.id==='buyhotel');
+        if (hotelUpgrade) hotelUpgrade.owned = false;
+        G.rank = Math.min(G.rank, 2);
+        G.mortgageTotal = 0; G.mortgagePaid = 0; G.mortgageMissed = 0;
+        log('The Bellmore has been repossessed. Deed reverted to previous owner.','bad');
+        showResult(
+          'A bailiff arrives on a Tuesday with a sealed envelope. Inside is a single line: the deed has been transferred back.<br><br>Two missed payments. The contract was clear.<br><br><em>You are still employed here. For now.</em>',
+          'bad',
+          [{label:'Repossessed',neg:true},{label:'Demoted to GM',neg:true}]
+        );
+        changeRep(-8,'repossession of the property');
+      } else {
+        log('Mortgage payment missed. One more and the deed reverts.','bad');
+        showResult(
+          'The weekly payment is due but the account is short.<br><br><em>'+fmt(payment)+' owed. You have '+fmt(G.tips)+'.</em><br><br>One more missed payment and the agreement is void.',
+          'bad',
+          [{label:'Payment Missed',neg:true},{label:'Warning: 1/2',neg:true}]
+        );
+      }
+    }
   }
 
   // Auto-neglect: fires BEFORE resetting interactedToday so yesterday's actions count
@@ -2519,8 +2588,16 @@ function renderAll() {
         <div class="upgrade-name" style="font-size:16px">${u.name}</div>
         <div class="upgrade-desc" style="margin-bottom:10px">${u.desc}</div>
         ${u.owned
-          ? '<div style="font-size:11px;color:var(--green-bright)">The deed is in your name. Revenue flows nightly.</div>'
-          : `<div style="font-size:9px;color:var(--ink-faint);margin-bottom:8px;font-style:italic">Current valuation at ${stars}-star (${starLabels[stars]}): rises with your reputation.</div>
+          ? (() => {
+              const stillOwed = (G.mortgageTotal||0) - (G.mortgagePaid||0);
+              if (stillOwed > 0) {
+                const missed = G.mortgageMissed || 0;
+                return `<div style="font-size:11px;color:var(--gold)">The deed is in your name.</div>
+                  <div style="font-size:10px;color:var(--ink-faint);margin-top:4px">Balance: <strong style="color:var(--ink)">${fmt(stillOwed)}</strong> &nbsp;·&nbsp; Weekly payment: <strong style="color:${missed>0?'var(--red-bright)':'var(--ink)'}">${fmt(G.mortgagePayment)}</strong>${missed>0?' &nbsp;<span style="color:var(--red-bright)">⚠ '+missed+'/2 missed</span>':''}</div>`;
+              }
+              return '<div style="font-size:11px;color:var(--green-bright)">Fully owned. The deed is in your name. Revenue flows nightly.</div>';
+            })()
+          : `<div style="font-size:9px;color:var(--ink-faint);margin-bottom:8px;font-style:italic">Down payment at ${stars}-star standing (${starLabels[stars]}). Lower your rating, lower the asking price.</div>
              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
                <div style="font-size:14px;color:var(--gold);font-weight:bold;font-family:'Playfair Display',serif">${fmt(price)}</div>
                <button class="btn ${G.tips>=price?'btn-gold':'btn-dim'}" onclick="buyUpgrade('${u.id}')" style="flex:0;min-width:100px;border:none">${G.tips>=price?'Make the Offer':'Need '+fmt(price)}</button>
