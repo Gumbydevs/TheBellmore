@@ -1596,15 +1596,24 @@ function addXP(xp) {
   const thresh = G.rankThresh[G.rank];
   if (G.rankXP >= thresh && G.rank < 3) {
     G.rank++; G.rankXP = 0;
+    const newRank = G.rank;
     const msgs = {
-      1: 'Management noticed. You have been moved to the front desk.<br><br>You now process guest check-ins directly. Guests see your face first. Your tips have increased. The desk commands more than a cart ever did.',
-      2: 'The General Manager position is yours. Nobody else wanted it, which tells you something about this hotel.<br><br>You now earn ten times what you earned as a Bellhop. Daily hotel revenue begins flowing when you acquire the property. Guests treat you differently when you wear the title. Some of the permanent residents seem to have noticed as well.',
+      1: 'Management noticed. You have been moved to the front desk.<br><br>You now process guest check-ins directly. Guests see your face first. Your funds have increased. The desk commands more than a cart ever did.',
+      2: 'The General Manager position is yours. Nobody else wanted it, which tells you something about this hotel.<br><br>Daily hotel revenue begins flowing when you acquire the property. Guests treat you differently when you wear the title. Some of the permanent residents seem to have noticed as well.',
       3: 'You own The Bellmore. The deed is in your name, the ghosts are legally your problem, and the boiler is older than you are.<br><br>Revenue flows directly. The 5-star ceiling is gone. The hotel\'s fate is entirely yours.',
     };
-    log('PROMOTED to ' + G.rankNames[G.rank] + '.', 'good');
-    showResult(msgs[G.rank] || 'You have been promoted.', 'good', [{label:'Now: '+G.rankNames[G.rank],pos:true}]);
+    log('PROMOTED to ' + G.rankNames[newRank] + '.', 'good');
     if (G.rank === 1) addTask('Your first shift at the front desk. The previous clerk left no notes.', 2);
     if (G.rank === 2) addTask('As General Manager, review the week\'s incident reports and sign off.', 3);
+    // Defer so any showResult from the calling action resolves first
+    setTimeout(() => {
+      if (window.AudioFX) {
+        window.AudioFX.playBell({ freq: 740, decay: 1.5 });
+        setTimeout(() => window.AudioFX.playBell({ freq: 880, decay: 1.8 }), 280);
+        setTimeout(() => window.AudioFX.playBell({ freq: 1047, decay: 2.0 }), 520);
+      }
+      showResult(msgs[newRank] || 'You have been promoted.', 'good', [{label:'PROMOTED',pos:true},{label:'Now: '+G.rankNames[newRank],pos:true}]);
+    }, 600);
   }
 }
 
@@ -1813,6 +1822,7 @@ function checkoutGuest(id) {
     const bellTip = g.happiness >= 60 ? 4 : 2;
     earn(bellTip);
     addXP(1);
+    if (window.AudioFX) window.AudioFX.playBell();
     log(g.name+' seen out by bellhop. Tip: '+fmt(bellTip)+'.', 'neutral');
     showResult(
       'You carry <strong>'+g.name+'\'s</strong> bags to the door and hold it open. They press '+fmt(bellTip)+' into your hand without much ceremony. The paperwork will be handled by the desk.',
@@ -1854,6 +1864,7 @@ function checkoutGuest(id) {
     ...(repChange>0 ? [{label:'+'+repChange+' Rating', pos:true}] : (repChange<0 ? [{label:repChange+' Rating', neg:true}] : []))
   ];
   log(g.name+' checked out. Mood: '+g.happiness+'%. Tip: '+fmt(tipBase)+'.', type);
+  if (window.AudioFX) window.AudioFX.playBell();
   showResult('<strong>'+g.name+'</strong> checks out of Room '+g.room+'.<br><br><em>'+outcome+'</em>', type, pills);
   G.guests = G.guests.filter(x=>x.id!==id);
   renderAll();
@@ -2516,7 +2527,7 @@ function renderAll() {
           </button>`:''}
           ${!readyToLeave&&!g.reqDone?`<button class="btn btn-purple" onclick="fulfillRequest(${g.id})" ${g.reqFulfilledToday||!canAffordAction(ACTION_BASE_UNITS.request)?'disabled':''}>See to Request <span class="cost-badge">${unitsLabel(ACTION_BASE_UNITS.request+OVERHEAD_MAX_UNITS)}</span></button>`:''}
           ${readyToLeave ? (G.rank === 0
-            ? `<button class="btn btn-dim" onclick="checkoutGuest(${g.id})">Carry Bags Out</button>`
+            ? `<button class="btn btn-gold" onclick="checkoutGuest(${g.id})">Carry Bags Out</button>`
             : `<button class="btn btn-gold" onclick="checkoutGuest(${g.id})">Process Checkout</button>`
           ) : ''}
         </div></div>`;
