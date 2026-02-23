@@ -21,4 +21,4 @@ jobs:
           itchUsername: gumbydev
           itchGameId: the-bellmore
           gameData: .
-          channelName: html
+          buildChannel: html
