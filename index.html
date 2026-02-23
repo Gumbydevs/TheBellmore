@@ -807,7 +807,7 @@
   <div class="star-tier" id="starTier" style="font-size:11px;color:var(--gold);font-family:'Playfair Display',serif;margin-top:4px"><span style="font-size:9px;color:var(--ink-faint);font-family:'Courier Prime',monospace;letter-spacing:1px;font-style:normal">STANDING </span><span id="starTierWord">Questionable</span></div>
   <div class="rep-bar-track" style="margin:8px 0 0"><div class="rep-bar-fill" id="repBar" style="width:20%"></div></div>
   <div class="header-row">
-    <div class="hpill htips">Tips<span class="v" id="tipsVal">$0</span></div>
+    <div class="hpill htips">Funds<span class="v" id="tipsVal">$0</span></div>
     <div class="hpill hghosts">In House<span class="v" id="occupancyVal">0</span></div>
     <div class="hpill hseason">Season<span class="v" id="seasonVal">🍂 Fall</span></div>
     <div class="hpill htime">Shift Hours<span class="v" id="timeVal">8h</span></div>
@@ -892,7 +892,7 @@
       <div class="stat-block-title">Your Record</div>
       <div class="stat-row"><span>Rank</span><span class="sv" id="statRank" style="font-weight:normal">Bellhop</span></div>
       <div class="stat-row"><span>Days Worked</span><span class="sv" id="statDays">1</span></div>
-      <div class="stat-row"><span>Total Tips Earned</span><span class="sv" id="statTips">$0</span></div>
+      <div class="stat-row"><span>Total Earned</span><span class="sv" id="statTips">$0</span></div>
       <div class="stat-row"><span>Rank Progress</span><span class="sv" id="statXP">0/10 XP</span></div>
     </div>
     <div class="stat-block">
@@ -914,7 +914,7 @@
 <div class="view" id="view-upgrades">
   <div class="section">
     <div class="sec-title">Hotel Upgrades</div>
-    <p class="note">Spend tips on improvements. You have <span id="shopTips" style="color:var(--green-bright);font-style:normal;font-weight:bold">$0</span> available.</p>
+    <p class="note">Spend funds on improvements. You have <span id="shopTips" style="color:var(--green-bright);font-style:normal;font-weight:bold">$0</span> available.</p>
     <div id="shopList"></div>
   </div>
 </div>
@@ -2298,7 +2298,7 @@ function gameOver(cause) {
 
   document.getElementById('overMsg').innerHTML = msg;
   document.getElementById('overHeadline').textContent = headline;
-  document.getElementById('overStats').textContent = 'Days worked: '+G.day+' · Tips earned: '+fmt(G.totalTips)+' · Final rank: '+G.rankNames[G.rank];
+  document.getElementById('overStats').textContent = 'Days worked: '+G.day+' · Total earned: '+fmt(G.totalTips)+' · Final rank: '+G.rankNames[G.rank];
   document.getElementById('overScreen').classList.remove('hidden');
 }
 
