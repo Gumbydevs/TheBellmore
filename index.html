@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Bellmore</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛎</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -34,6 +34,8 @@
     margin: 0 auto;
     padding-bottom: 76px;
     background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(90,74,48,0.06) 27px, rgba(90,74,48,0.06) 28px);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 
   /* HEADER */
@@ -98,6 +100,7 @@
       padding-bottom: 0;
       min-height: 100vh;
       gap: 0;
+      -webkit-overflow-scrolling: touch;
     }
 
     /* ── LEFT SIDEBAR: hotel identity panel ── */
@@ -108,6 +111,7 @@
       top: 0;
       height: 100vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       border-bottom: none;
       border-right: 1px solid var(--border);
       box-shadow: 4px 0 32px rgba(0,0,0,.5);
@@ -281,6 +285,7 @@
       grid-column: 2;
       grid-row: 3;
       padding: 0;
+      padding-bottom: 72px;
     }
 
     .section {
@@ -772,7 +777,7 @@
       </div>
     </div>
   </div>
-  <div style="margin-top:14px;font-size:10px;color:var(--ink-faint);letter-spacing:2px;font-style:italic">v0.9.3 · Public Beta</div>
+  <div style="margin-top:14px;font-size:10px;color:var(--ink-faint);letter-spacing:2px;font-style:italic">v0.9.4 · Public Beta</div>
   </div>
 
 <!-- GAME OVER -->
@@ -826,7 +831,7 @@
   </div>
   <div class="sidebar-footer" style="display:none">
     © 2026 Gumbysoft<br>
-    <span style="opacity:.6">v0.9.3 · Public Beta</span>
+    <span style="opacity:.6">v0.9.4 · Public Beta</span>
   </div>
 </div>
 
